@@ -32,7 +32,7 @@ None of the following exists: plans and payments, credits, budget, teacher/stude
 | Guest upgrade without merging with existing accounts | ✅ | Matches P03§10. |
 | Email code | ➕ | P03§8. |
 | Guest expiry at 90 days | 🔧 | Today they do not expire. |
-| Declared age, country, market matrix | ➕ | P19, P35. |
+| Declared age, country, market matrix | 🔧 | Core built (T-103): matrix seeded from P35, declarations, minority signals, acceptances, admin matrix. `check-market-access` is not yet called by create-game, join, subscribe or class flows (each milestone wires it, passing the approximate country from `api/geolocation`, whose local locator always answers unknown). No admin endpoint publishes acceptance texts yet; real texts are loaded before delivery 2 (P-23). |
 | Normal/teacher/student modes | ➕ | Only levels anonymous < guest < account. |
 | Per-class student identity with credential | ➕ | P03§2-7. |
 | Link methods, recovery, profile | ➕ | |
