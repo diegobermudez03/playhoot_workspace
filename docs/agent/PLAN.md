@@ -57,7 +57,7 @@ Order: T-001 → T-003 → T-002 → T-004 → T-005. H0 is closed.
 |---|---|---|---|---|
 | T-100 | H1 design: decides shared packages and minimal new domains, documents them in `planned` and writes T-101… | A | L | done 2026-11-15 |
 | T-101 | Transactional queue package: per-domain tables, worker, DLQ, admin list/retry/cancel | B | M | done 2026-11-15 |
-| T-102 | Admin second factor: grant, TOTP, admin token, single-use step-up proofs | B | M | pending |
+| T-102 | Admin second factor: grant, TOTP, admin token, single-use step-up proofs | B | M | done |
 | T-103 | Compliance core: market matrix (P35 seed), declarations, minority signals, acceptances | B | M | pending |
 | T-104 | Plan minimal: configurable free limits and get-user-limits | C | S | pending |
 | T-105 | Budget core: rates, caps, spend ingestion, admission, restriction ladder, cutoff/reopen | B | L | pending |

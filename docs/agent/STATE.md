@@ -1,14 +1,14 @@
 # State
 
-_Updated: 2026-11-15, closing of T-101._
+_Updated: 2026-11-15, closing of T-102._
 
 ## Next task
 
-**T-102** · model **Opus** · effort **medium** · Admin second factor: grant, TOTP, admin-mode token, single-use step-up proofs.
+**T-103** · model **Opus** · effort **medium** · Compliance core: market matrix, declarations, minority signals, acceptances.
 
 ## Current milestone
 
-H1 — Backend foundations. T-100 designed the whole milestone; T-101 done; T-102…T-108 implement the rest in order (see `PLAN.md` H1 board).
+H1 — Backend foundations. T-100 designed the whole milestone; T-101 and T-102 done; T-103…T-108 implement the rest in order (see `PLAN.md` H1 board).
 
 ## In progress
 
@@ -20,8 +20,9 @@ None. C-03 (visual direction) is planned for H2.
 
 ## Notes for the next session
 
-- T-101 built `utils/txqueue` (D-014, V-05). A domain gets its queue with `registry.Queue(domain)` in `main`, creates its table with `txqueue.Migration` in its own migrations, and registers handlers there. The admin level `admin` and operation `MANAGE_QUEUES` exist in Identity's catalog but no token reaches `admin` yet: T-102 must make admin-mode tokens carry `LevelAdmin` so the queue endpoints open.
-- The creator must recreate the local database after T-101 (grants migration edited in place).
+- T-101 built `utils/txqueue` (D-014, V-05). A domain gets its queue with `registry.Queue(domain)` in `main`, creates its table with `txqueue.Migration` in its own migrations, and registers handlers there.
+- T-102 built the admin second factor (D-015). To become admin locally: sign in, read the UUID from `GET /v1/identity/me`, set `IDENTITY_ADMIN_USER_UUID`, restart, enroll at `POST /v1/identity/totp/enroll` + `/confirm`, then `POST /v1/identity/totp/verify` with purpose `admin_token` (admin endpoints) or `step_up` (proof for a sensitive action). Each new admin endpoint needs its own operation at level `admin` in Identity's catalog (as `MANAGE_QUEUES`); sensitive flows spend the proof with `orchestrator/stepup`.
+- The creator must recreate the local database after T-101 (grants migration edited in place) if not done yet; T-102 only added a new migration.
 - Two sandbox timing tests (`play/runtime/sandbox`, `simulategame`) can fail under full-suite load and pass alone; not caused by H1 work.
 - Backend DB tests run here: export `TEST_DATABASE_*` from the values in `playhoot/.env` (Postgres container is up).
 - T-100 loaded the H1 design as `planned` site data (+79 entities, validator at 0 over 401): txqueue package detail, identity admin 2FA, compliance core, plan free limits, budget core with the restriction-ladder lifecycle, notifications with email providers behind ports, analytics ingestion, 9 detailed flows and 23 planned endpoints. Decisions D-010…D-013, defaults V-02…V-04.
