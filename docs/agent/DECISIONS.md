@@ -51,6 +51,18 @@ Tree rule as applied: a parent's exported surface may be implemented in its subd
 
 **D-009 · Documentation model additions (T-002).** Two additions to the site's data model (spec updated in `designs/system-docs.md`): a `planned` flow may carry `touches` (domain ids) instead of steps and persistence until its milestone design details it — the validator enforces one or the other; and a `package` entity documents the shared technical packages (queue, limits, storage, logging, metrics) in their own site section, so H1 has a home for the queue's documentation. Domains may also list `references`: which other domains' external identifiers they store.
 
+**D-010 · Transactional queue design (T-100).**
+One infrastructure table per domain (`<domain>_queue_tasks`): task uuid, type, payload, `run_at`, attempts, lock, status `pending | running | dead | cancelled`; completed tasks are deleted. A worker per domain claims due tasks with `FOR UPDATE SKIP LOCKED`, retries with exponential backoff and jitter, and after max attempts marks the task `dead` — that status **is** the dead letter queue (no second table). Handlers are idempotent and registered per task type by the owning domain; the **cross-domain delivery types (`notify`, `analytics-event`, `spend-event`) are registered by the orchestrator**, so a domain tells another something by writing a task into its own queue inside its own transaction, and the orchestrator's processor carries it over (flows `deliver-notification`, `ingest-spend-events`, `ingest-analytics-events`). Periodic work re-enqueues itself on completion. A package-level registry over every domain queue serves admin: list dead tasks, retry, cancel. Service, queue and processor code stay separate to migrate to a real outbox+queue later.
+
+**D-011 · Admin second factor and sensitive actions (T-100).**
+Second factor = TOTP. An admin-mode token is issued only to the account with the active admin grant after a valid code; the normal login never elevates. Sensitive operations (budget caps and rates, cutoff, reopening) take a fresh code inline: `identity.verify-totp` issues a **single-use step-up proof valid 10 minutes**, consumed by exactly one action and recording what it was spent on. There is **no central action log** (confirms D-001): every admin-configurable table is append-only with `created_by` and `reason` (market rules, free limits, caps, rates, email mode, ladder changes), and identity keeps the second-factor check trail.
+
+**D-012 · Budget admission model (T-100).**
+Admission is reservation-based: `budget.admit-work` checks the restriction ladder, then sums measured spend + estimated un-billed spend + active reservations + a margin (V-04) against every applicable window (hour/day/month, category and global) and writes a reservation the caller later settles against measured cost. A missing cap, missing rate or zero budget **blocks the category** — never unlimited. The ladder (`normal → restricted → paused → shutdown`) is the latest row of an append-only change table; escalation and de-escalation below shutdown are automatic (`budget.evaluate-ladder`, run after ingestion and periodically); **shutdown only leaves through the manual, step-up-verified, gradual `reopen-spending` flow**. Refusals are worded as service restrictions, never as the user's balance. The money picture (cash, reserves, surplus split — P30) needs billing and is designed in H6.
+
+**D-013 · Documentation model: package steps (T-100).**
+A flow step may name a `package` instead of `domain` + `operation` when the work is done by a shared package over infrastructure tables (the txqueue admin registry in `admin-dlqs` and `manage-dead-task`). Validator and `designs/system-docs.md` updated.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
@@ -58,3 +70,6 @@ Operational values the specification does not fix (anti-abuse windows, page size
 | ID | Value | Origin |
 |---|---|---|
 | V-01 | Free AI ceiling per account: 300 credits per 30 days (30 % of the cheapest plan's 1,000), inside the global pool of USD 10 per month split by week | B: business rules, P28§3, P30§5 |
+| V-02 | Queue retry policy: 10 attempts, exponential backoff from 10 s capped at 1 h, with jitter; completed tasks deleted; dead tasks kept until retried or cancelled | B: principles |
+| V-03 | TOTP: 5 failed codes per 15 min then a 15 min lock; step-up proof valid 10 min, single use | B: admin, P32§7 |
+| V-04 | Initial local cost caps until the creator sets real ones: global USD 120/month, 8/day, 1/hour; email USD 1/day; admission margin 10 % of the window remainder | P32§2, P32§9, P12§1 |

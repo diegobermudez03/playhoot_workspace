@@ -157,6 +157,13 @@ for (const t of TYPES) {
         if (!has('domain', d)) err(file, t, id, `touches domain "${d}" which does not exist`);
       }
       for (const s of arr(e.steps)) {
+        // A step may name a shared package instead of a domain operation, for work done
+        // by infrastructure the package owns (e.g. the txqueue admin registry) — D-013.
+        if (s.package) {
+          if (!has('package', s.package)) err(file, t, id, `step ${s.n}: package "${s.package}" does not exist`);
+          if (s.domain || s.operation) err(file, t, id, `step ${s.n}: a package step must not also name a domain or operation`);
+          continue;
+        }
         if (!has('operation', s.operation)) err(file, t, id, `step ${s.n}: operation "${s.operation}" does not exist`);
         if (!has('domain', s.domain)) err(file, t, id, `step ${s.n}: domain "${s.domain}" does not exist`);
         else if (has('operation', s.operation) && entities.operation.get(s.operation).e.domain !== s.domain)
