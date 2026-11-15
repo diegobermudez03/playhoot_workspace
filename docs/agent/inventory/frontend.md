@@ -1,107 +1,107 @@
-# Inventario del frontend `playhoot_frontend`
+# `playhoot_frontend` frontend inventory
 
-Fecha del inventario: 2026-11-15. Solo lectura sobre el repo (salvo este archivo). Fuente de verdad: el codigo; donde la documentacion del repo discrepa se anota **[DRIFT]**. Lo no verificado en codigo se marca **[inferido]**.
-Ruta del repo: `c:\Users\Usuario\Documents\project\repos\playhoot_frontend` (51 commits; HEAD `c508a3b template configurations`).
+Inventory date: 2026-11-15. Read-only on the repo (except this file). Source of truth: the code; where the repo's documentation disagrees, **[DRIFT]** is noted. What is not verified in code is marked **[inferred]**.
+Repo path: `c:\Users\Usuario\Documents\project\repos\playhoot_frontend` (51 commits; HEAD `c508a3b template configurations`).
 
 ---
 
-## 1. Stack y layout
+## 1. Stack and layout
 
-### 1.1 Stack (verificado en `package.json`, `vite.config.ts`, `eslint.config.js`, `tsconfig.base.json`)
+### 1.1 Stack (verified in `package.json`, `vite.config.ts`, `eslint.config.js`, `tsconfig.base.json`)
 
-| Aspecto | Valor |
+| Aspect | Value |
 | --- | --- |
 | Monorepo | npm workspaces: `apps/*`, `packages/*`, `packages/features/*`, `fixtures/games/*`. Node >= 22.12, ESM |
-| Lenguaje | TypeScript ~6.0.3, `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax` |
-| UI | React 19.3 + react-dom (solo en `apps/web` y `packages/game-react`) |
-| Bundler / dev server | Vite 8 + `@vitejs/plugin-react` 6 (`apps/web/vite.config.ts`). Proxy `/v1` (REST + WS) a `PLAYHOOT_BACKEND_URL` o `http://localhost:8081`. Plugin dev `fixtureGames()` sirve `/__fixtures/games/*` |
-| Router | `react-router` 7.18 (`createBrowserRouter`, `apps/web/src/app/router.tsx`). Solo SPA en modo "data router", sin loaders/actions |
-| Estado | `zustand` 5 (stores vanilla `createStore` en packages; `useStore` en la UI). Sin Redux/Query. Estado global en `@playhoot/app-core` (`createAppState`) |
-| Estilos | CSS Modules + `tokens.css`/`motion.css` globales (ADR-0003). Sin Tailwind ni kit de componentes de terceros |
-| i18n | `react-intl` 12 / FormatJS, catalogos ICU tipados `es` (fuente de ids: `en.ts`), `en`, `pt-BR` en `apps/web/src/i18n/messages/`; lint `formatjs/no-literal-string-in-jsx` (ADR-0004) |
-| Validacion de contratos | `zod` 4 en `@playhoot/protocol` (schemas de mensajes WS y respuestas HTTP) |
-| Fuentes | `@fontsource-variable/fredoka` (display), `@fontsource-variable/nunito` (cuerpo), `@fontsource/roboto` (solo boton de Google) |
-| Tests | Vitest 5 (`vitest.config.ts`, incluye `apps/**/src/**/*.test.*`, `packages/**/src/**/*.test.*`), 53 archivos `*.test.ts(x)`. No hay e2e ni tests de componentes en navegador |
-| Lint / formato | ESLint 10 flat config (+ `typescript-eslint`, `react-hooks`, `formatjs`) con reglas de frontera entre paquetes; Prettier 3 |
-| Toolchain de juegos | `rolldown` 1.2 + `acorn` + `typescript` en `packages/game-tools` |
+| Language | TypeScript ~6.0.3, `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax` |
+| UI | React 19.3 + react-dom (only in `apps/web` and `packages/game-react`) |
+| Bundler / dev server | Vite 8 + `@vitejs/plugin-react` 6 (`apps/web/vite.config.ts`). Proxy `/v1` (REST + WS) to `PLAYHOOT_BACKEND_URL` or `http://localhost:8081`. Dev plugin `fixtureGames()` serves `/__fixtures/games/*` |
+| Router | `react-router` 7.18 (`createBrowserRouter`, `apps/web/src/app/router.tsx`). SPA only in "data router" mode, no loaders/actions |
+| State | `zustand` 5 (vanilla `createStore` stores in packages; `useStore` in the UI). No Redux/Query. Global state in `@playhoot/app-core` (`createAppState`) |
+| Styles | CSS Modules + global `tokens.css`/`motion.css` (ADR-0003). No Tailwind or third-party component kit |
+| i18n | `react-intl` 12 / FormatJS, typed ICU catalogs `es` (source of ids: `en.ts`), `en`, `pt-BR` in `apps/web/src/i18n/messages/`; lint `formatjs/no-literal-string-in-jsx` (ADR-0004) |
+| Contract validation | `zod` 4 in `@playhoot/protocol` (schemas for WS messages and HTTP responses) |
+| Fonts | `@fontsource-variable/fredoka` (display), `@fontsource-variable/nunito` (body), `@fontsource/roboto` (Google button only) |
+| Tests | Vitest 5 (`vitest.config.ts`, includes `apps/**/src/**/*.test.*`, `packages/**/src/**/*.test.*`), 53 `*.test.ts(x)` files. No e2e or browser component tests |
+| Lint / formatting | ESLint 10 flat config (+ `typescript-eslint`, `react-hooks`, `formatjs`) with boundary rules between packages; Prettier 3 |
+| Game toolchain | `rolldown` 1.2 + `acorn` + `typescript` in `packages/game-tools` |
 
-### 1.2 Apps y paquetes (quien importa a quien, de `package.json` de cada uno)
+### 1.2 Apps and packages (who imports whom, from each `package.json`)
 
-| Workspace | Proposito | Depende de (dependencies `@playhoot/*`) |
+| Workspace | Purpose | Depends on (`@playhoot/*` dependencies) |
 | --- | --- | --- |
-| `apps/web` (`@playhoot/web`) | Host web: shell React, router, presentacion, adaptadores de plataforma (credenciales, iframe, cache), design system, sonido, telemetria, i18n. Composition root `src/app/services.ts` | app-core, communication, device, protocol, game-host, feature-game-authoring, feature-session-host, feature-session-join, feature-session-play, feature-sign-in |
-| `apps/mobile` | NO existe codigo: solo `README.md` ("NOT STARTED") | n/a |
-| `packages/protocol` | Contratos: paths HTTP, schemas zod, mensajes WS (player/admin/preview), puente Game<->Host (`./bridge`, `./bridge/validation`) | zod |
-| `packages/app-core` | Estado global: credencial, `AuthSnapshot`, niveles de acceso (`anonymous<guest<account`), catalogo de operaciones, idioma | zustand |
-| `packages/communication` | Clientes HTTP/WS: `http.ts`, `identityClient`, `gamesClient`, `sessionsClient`, `aiAccessClient`, `telemetryReporter`, `sessionConnection`, `adminConnection`, `previewConnection`, `viewState` | app-core, protocol |
-| `packages/device` | `DeviceCapabilities` + store de capacidades/clase de pantalla | zustand |
-| `packages/game-host` | GameHost: carga/verifica artefacto, handshake del puente, proyecciones, assets, limites (`bridgeGuard`), viewport | communication, protocol |
-| `packages/game-sdk` | API que ve el juego dentro del iframe (`createPlayhoot`), solo `@playhoot/protocol/bridge` | protocol |
-| `packages/game-core` | Declaraciones compartidas de juego (`defineCommands`, campos, validacion, fases, idiomas, brief) | (ninguno) |
-| `packages/game-server` | Runtime del script de servidor (`defineGame`, `reject`...) que corre en el sandbox del backend | game-core |
-| `packages/game-react` | Superficie React del cliente del juego (`mountGame`, hooks, `Button`/`Choices`/`TextAnswer`, `Scoreboard`...) sobre React Aria | game-core, game-sdk |
-| `packages/game-tools` | CLI `build <proyecto>`: reglas de fuente, typecheck, bundles server/client, manifest, smoke run | game-core, game-react, game-server |
-| `packages/features/sign-in` | Estado logico de invitado, login con proveedor, nombre | app-core, communication, protocol |
-| `packages/features/session-join` | `createJoinSession` (conectar -> lobby -> started -> closed, reconexion) | app-core, communication, protocol |
-| `packages/features/session-host` | `createHostSession` (conexion admin del creador) | app-core, communication, protocol |
-| `packages/features/session-play` | `createSessionPlay` (corre el juego via GameHost sobre el "live link" de Join/Host/Preview) | game-host |
+| `apps/web` (`@playhoot/web`) | Web host: React shell, router, presentation, platform adapters (credentials, iframe, cache), design system, sound, telemetry, i18n. Composition root `src/app/services.ts` | app-core, communication, device, protocol, game-host, feature-game-authoring, feature-session-host, feature-session-join, feature-session-play, feature-sign-in |
+| `apps/mobile` | NO code exists: only `README.md` ("NOT STARTED") | n/a |
+| `packages/protocol` | Contracts: HTTP paths, zod schemas, WS messages (player/admin/preview), Game<->Host bridge (`./bridge`, `./bridge/validation`) | zod |
+| `packages/app-core` | Global state: credential, `AuthSnapshot`, access levels (`anonymous<guest<account`), operation catalog, language | zustand |
+| `packages/communication` | HTTP/WS clients: `http.ts`, `identityClient`, `gamesClient`, `sessionsClient`, `aiAccessClient`, `telemetryReporter`, `sessionConnection`, `adminConnection`, `previewConnection`, `viewState` | app-core, protocol |
+| `packages/device` | `DeviceCapabilities` + capabilities/screen class store | zustand |
+| `packages/game-host` | GameHost: loads/verifies artifact, bridge handshake, projections, assets, limits (`bridgeGuard`), viewport | communication, protocol |
+| `packages/game-sdk` | API the game sees inside the iframe (`createPlayhoot`), only `@playhoot/protocol/bridge` | protocol |
+| `packages/game-core` | Shared game declarations (`defineCommands`, fields, validation, phases, languages, brief) | (none) |
+| `packages/game-server` | Server script runtime (`defineGame`, `reject`...) that runs in the backend sandbox | game-core |
+| `packages/game-react` | React surface of the game client (`mountGame`, hooks, `Button`/`Choices`/`TextAnswer`, `Scoreboard`...) on top of React Aria | game-core, game-sdk |
+| `packages/game-tools` | CLI `build <project>`: source rules, typecheck, server/client bundles, manifest, smoke run | game-core, game-react, game-server |
+| `packages/features/sign-in` | Logical guest state, provider login, name | app-core, communication, protocol |
+| `packages/features/session-join` | `createJoinSession` (connect -> lobby -> started -> closed, reconnection) | app-core, communication, protocol |
+| `packages/features/session-host` | `createHostSession` (creator's admin connection) | app-core, communication, protocol |
+| `packages/features/session-play` | `createSessionPlay` (runs the game via GameHost over the Join/Host/Preview "live link") | game-host |
 | `packages/features/game-authoring` | `createGameAuthoring`, `createGamePreview`, `createGamePublishing`, `createScenarioRunner`, `createAiLinkSharing`, `createTemplateBrowser`, `createMyGamesList`, `createAiConsent`, `createAiConnectionsList`, `parsePastedChange` | communication, game-core, protocol |
-| `fixtures/games/{space-drift,parques}` | Juegos canvas reales (artefactos HTML) construidos con el SDK; `npm run fixtures` | game-sdk |
-| `fixtures/sdk-games/{tap-race,number-guess,pairs,drift,quiz,know-me}` | Proyectos de juego completos del SDK v1 (no son workspaces; se compilan en tests) | n/a |
+| `fixtures/games/{space-drift,parques}` | Real canvas games (HTML artifacts) built with the SDK; `npm run fixtures` | game-sdk |
+| `fixtures/sdk-games/{tap-race,number-guess,pairs,drift,quiz,know-me}` | Full SDK v1 game projects (not workspaces; compiled in tests) | n/a |
 
-Fronteras impuestas por lint (`eslint.config.js`): los packages no importan apps ni `react-dom`/`react-native`/`react-router`; `game-sdk` solo `@playhoot/protocol/bridge`, sin UI; `game-core`/`game-server` solo `game-core` y sin React; `game-react` y fixtures solo via `game-sdk`.
-Nota: `packages/features/*` y `game-host` importan solo `zustand`/`communication`; ninguno importa React (verificado por lint de packages).
+Boundaries enforced by lint (`eslint.config.js`): packages do not import apps or `react-dom`/`react-native`/`react-router`; `game-sdk` only `@playhoot/protocol/bridge`, no UI; `game-core`/`game-server` only `game-core` and no React; `game-react` and fixtures only via `game-sdk`.
+Note: `packages/features/*` and `game-host` import only `zustand`/`communication`; none imports React (verified by package lint).
 
-### 1.3 Scripts raiz (`package.json`)
+### 1.3 Root scripts (`package.json`)
 
-| Script | Hace |
+| Script | Does |
 | --- | --- |
-| `dev` | `vite` de `@playhoot/web` (puerto 5173, strictPort) |
-| `build` | typecheck de `@playhoot/web` + `vite build` |
-| `typecheck` | `tsc --noEmit` en todos los workspaces (`--workspaces --if-present`) |
+| `dev` | `vite` of `@playhoot/web` (port 5173, strictPort) |
+| `build` | typecheck of `@playhoot/web` + `vite build` |
+| `typecheck` | `tsc --noEmit` in all workspaces (`--workspaces --if-present`) |
 | `lint` | `eslint .` |
 | `format` / `format:check` | `prettier --write .` / `--check .` |
 | `test` / `test:watch` | `vitest run` / `vitest` |
-| `check` | typecheck + lint + format:check + test + `node scripts/check-assets.mjs` (lo que AGENTS.md exige antes de dar algo por hecho) |
-| `assets` | `scripts/check-assets.mjs`: lista assets del registro `assets.json` existentes/faltantes y falla si alguno no esta documentado en `docs/design/ASSETS.md` |
-| `fixtures` | build de los dos juegos canvas (`space-drift`, `parques`) |
+| `check` | typecheck + lint + format:check + test + `node scripts/check-assets.mjs` (what AGENTS.md requires before calling something done) |
+| `assets` | `scripts/check-assets.mjs`: lists existing/missing assets of the `assets.json` registry and fails if any is not documented in `docs/design/ASSETS.md` |
+| `fixtures` | build of the two canvas games (`space-drift`, `parques`) |
 | `game` | `node --experimental-strip-types packages/game-tools/src/cli.ts` (CLI `build`) |
-| (sin script) `scripts/dev-host.mjs` | Herramienta dev: inicia sesion con proveedor local, crea Session, imprime link, se conecta como admin e inicia con Enter |
+| (no script) `scripts/dev-host.mjs` | Dev tool: signs in with the local provider, creates a Session, prints the link, connects as admin and starts on Enter |
 
 ---
 
-## 2. Pantallas y rutas
+## 2. Screens and routes
 
-Navegacion **basada en path con inputs en la URL** (invariante 11: "la URL determina la navegacion"). Query params usados: `next` (retorno tras autenticar, validado por `safeNext`), `code` (join code del host), `game` (gameUUID para crear sesion), `section` (seccion del workspace), `request` (id de autorizacion IA). Los tokens nunca van en URL; el `code` one-time de login se lee y borra antes de renderizar (`src/captureSignIn.ts`, `platform/signInCompletion.ts`).
-Composicion de URLs en `apps/web/src/features/paths.ts` (el backend nunca devuelve URLs, ADR-0002).
+**Path-based navigation with inputs in the URL** (invariant 11: "the URL determines navigation"). Query params used: `next` (return after authenticating, validated by `safeNext`), `code` (host's join code), `game` (gameUUID to create a session), `section` (workspace section), `request` (AI authorization id). Tokens never go in the URL; the one-time login `code` is read and deleted before rendering (`src/captureSignIn.ts`, `platform/signInCompletion.ts`).
+URL composition in `apps/web/src/features/paths.ts` (the backend never returns URLs, ADR-0002).
 
-Acceso: cada ruta protegida usa `RequireOperation` (`features/access.tsx`) contra el catalogo `GET /v1/identity/operations`; si falta nivel redirige a `/sign-in/guest` (si basta invitado) o `/sign-in` (si requiere cuenta) con `?next=`. Es solo UX; el backend decide.
+Access: each protected route uses `RequireOperation` (`features/access.tsx`) against the `GET /v1/identity/operations` catalog; if the level is missing it redirects to `/sign-in/guest` (if a guest is enough) or `/sign-in` (if an account is required) with `?next=`. This is UX only; the backend decides.
 
-| Path | Componente | Muestra | Cuenta necesaria | Navega a |
+| Path | Component | Shows | Account needed | Navigates to |
 | --- | --- | --- | --- | --- |
-| `/` | `<Navigate>` (router.tsx) | Redireccion; "no hay home page todavia" | ninguna | `/join` |
-| `/join` | `EnterCodeRoute` | Logo + tagline + `CodeInput` (6 chars) + botones "Crear una partida", "Crear un juego", "Mis juegos" | ninguna (los 3 botones usan `useNavigateToOperation`) | `/join/:code`; `/sessions/new`; `/games/new`; `/games` (pasando por sign-in si falta nivel) |
-| `/sign-in` | `SignInRoute` | Boton Google (si el backend lo ofrece), boton "cuenta local" (solo dev), aviso si hay invitado activo | ninguna (si ya es cuenta -> `next` o `/`) | redireccion de pagina completa al proveedor; `next ?? /` |
-| `/sign-in/guest` | `GuestSignInRoute` | Campo nombre ("A jugar!") + enlace a iniciar sesion/registrarse | ninguna | `next ?? /`; `/sign-in?next=` |
-| `/sign-in/complete` | `SignInCompleteRoute` | Vuelta del proveedor: canjea `code`, muestra error si falla | ninguna | `next ?? /`; `/sign-in` |
-| (pantalla, no ruta) | `DisplayNameScreen` | `RootLayout` la muestra en lugar de cualquier pagina mientras una cuenta no tenga display name | cuenta sin nombre | (misma URL) |
-| `/sessions/new` | `CreateSessionRoute` | "Creando..." (buho animado) o error (`game-unavailable`, `active-limit`, otro) con reintentar | cuenta (`CREATE_SESSION`) | `/sessions/:uuid/host?code=` (replace) |
-| `/sessions/:sessionUUID/host` (`?code=`) | `HostRoute` | Lobby del creador (codigo/enlace, jugadores, limites min/max, Iniciar, "Unirme a jugar", Cancelar con confirmacion); partida: ver el juego de cualquier participante (solo lectura) o jugar; final/errores | cuenta (`JOIN_SESSION_AS_ADMIN`) | `/join` (cierre); embebe `PlayerSession` si el creador juega |
-| `/join/:joinCode` y `/sessions/:sessionUUID/play` | `SessionRoute` (padre sin path, 2 hijos) | Una sola instancia mantiene la conexion: conectando -> lobby (invitacion, jugadores con presencia) -> juego (iframe, asiento, lista de jugadores, salir) -> resultados | invitado o cuenta (`JOIN_SESSION_AS_PLAYER`) | de `/join/:code` a `/sessions/:uuid/play` (replace al conocer la Session); `/join` al salir |
-| `/games` | `MyGamesRoute` | Lista "Mis juegos" (nombre, publicado/visibilidad, edicion abierta, fecha) | cuenta (`EDIT_GAME`) | `/games/:id/edit`; `/games/new` |
-| `/games/new` | `CreateGameRoute` | Formulario nombre + `TemplatePicker` (plantillas destacadas, busqueda, inspeccion) o proyecto inicial | cuenta (`CREATE_GAME`) | `/games/:id/edit` (replace) |
-| `/games/:gameUUID/edit` (`?section=`) | `GameWorkspaceRoute` | Workspace con 9 secciones (ver 7) | cuenta (`EDIT_GAME`) | `/sessions/new?game=<uuid>` (desde Publicar) |
-| `/connect-ai` (`?request=`) | `ConnectAiRoute` | Consentimiento OAuth/MCP de una IA (nombre, host de retorno, que puede/no puede); Permitir/Denegar | cuenta [inferido: el path no tiene `RequireOperation`; la ruta llama a un endpoint que exige Bearer] | navegacion completa a la URL de la app IA (`redirect_url`) |
-| `/account/ai-connections` | `AiConnectionsRoute` | "IAs conectadas": lista y revocar (con confirmacion) | cuenta [inferido, igual que arriba] | (ninguna) |
-| `/design` | `DesignRoute` | Style guide vivo (tokens, componentes, pantallas con estado falso, tablero de sonidos). **Solo `import.meta.env.DEV`** | ninguna | (ninguna) |
-| `/dev/game-host` | `GameHostLabRoute` | Laboratorio de GameHost: Space Drift real contra Session falsa local. **Solo DEV** | ninguna | (ninguna) |
-| `*` | `NotFoundRoute` | 404 con "Ir al inicio" | ninguna | `/` |
+| `/` | `<Navigate>` (router.tsx) | Redirect; "no home page yet" | none | `/join` |
+| `/join` | `EnterCodeRoute` | Logo + tagline + `CodeInput` (6 chars) + buttons "Create a session", "Create a game", "My games" | none (the 3 buttons use `useNavigateToOperation`) | `/join/:code`; `/sessions/new`; `/games/new`; `/games` (going through sign-in if the level is missing) |
+| `/sign-in` | `SignInRoute` | Google button (if the backend offers it), "local account" button (dev only), notice if a guest is active | none (if already an account -> `next` or `/`) | full-page redirect to the provider; `next ?? /` |
+| `/sign-in/guest` | `GuestSignInRoute` | Name field ("Let's play!") + link to sign in/sign up | none | `next ?? /`; `/sign-in?next=` |
+| `/sign-in/complete` | `SignInCompleteRoute` | Return from the provider: exchanges `code`, shows error if it fails | none | `next ?? /`; `/sign-in` |
+| (screen, not route) | `DisplayNameScreen` | `RootLayout` shows it instead of any page while an account has no display name | account without name | (same URL) |
+| `/sessions/new` | `CreateSessionRoute` | "Creating..." (animated owl) or error (`game-unavailable`, `active-limit`, other) with retry | account (`CREATE_SESSION`) | `/sessions/:uuid/host?code=` (replace) |
+| `/sessions/:sessionUUID/host` (`?code=`) | `HostRoute` | Creator's lobby (code/link, players, min/max limits, Start, "Join to play", Cancel with confirmation); match: watch any participant's game (read-only) or play; end/errors | account (`JOIN_SESSION_AS_ADMIN`) | `/join` (close); embeds `PlayerSession` if the creator plays |
+| `/join/:joinCode` and `/sessions/:sessionUUID/play` | `SessionRoute` (parent without path, 2 children) | A single instance keeps the connection: connecting -> lobby (invitation, players with presence) -> game (iframe, seat, player list, leave) -> results | guest or account (`JOIN_SESSION_AS_PLAYER`) | from `/join/:code` to `/sessions/:uuid/play` (replace once the Session is known); `/join` on leave |
+| `/games` | `MyGamesRoute` | "My games" list (name, published/visibility, open edition, date) | account (`EDIT_GAME`) | `/games/:id/edit`; `/games/new` |
+| `/games/new` | `CreateGameRoute` | Name form + `TemplatePicker` (featured templates, search, inspection) or starter project | account (`CREATE_GAME`) | `/games/:id/edit` (replace) |
+| `/games/:gameUUID/edit` (`?section=`) | `GameWorkspaceRoute` | Workspace with 9 sections (see 7) | account (`EDIT_GAME`) | `/sessions/new?game=<uuid>` (from Publish) |
+| `/connect-ai` (`?request=`) | `ConnectAiRoute` | OAuth/MCP consent of an AI (name, return host, what it can/cannot do); Allow/Deny | account [inferred: the path has no `RequireOperation`; the route calls an endpoint that requires Bearer] | full navigation to the AI app's URL (`redirect_url`) |
+| `/account/ai-connections` | `AiConnectionsRoute` | "Connected AIs": list and revoke (with confirmation) | account [inferred, same as above] | (none) |
+| `/design` | `DesignRoute` | Living style guide (tokens, components, screens with fake state, sound board). **`import.meta.env.DEV` only** | none | (none) |
+| `/dev/game-host` | `GameHostLabRoute` | GameHost lab: real Space Drift against a local fake Session. **DEV only** | none | (none) |
+| `*` | `NotFoundRoute` | 404 with "Go home" | none | `/` |
 
-Elementos globales (no rutas): `AppShell` (barra superior: logo -> `/`, selector de idioma, boton de sonido, `AccountButton`), `AccountButton` (icono "iniciar sesion" si nadie; menu con inicial: invitado -> "Iniciar sesion"; cuenta -> "Mis juegos", "IAs conectadas", "Cerrar sesion"), `RouteError` (error boundary que reporta telemetria).
-`RootLayout` reconstruye todas las paginas cuando cambia la identidad (`identityKey`, tambien entre pestanas via evento `storage`).
-Total: 15 patrones de ruta de produccion (incluido el comodin `*`: `/`, `/join`, `/sign-in`, `/sign-in/guest`, `/sign-in/complete`, `/sessions/new`, `/sessions/:uuid/host`, `/join/:code`, `/sessions/:uuid/play`, `/games`, `/games/new`, `/games/:id/edit`, `/connect-ai`, `/account/ai-connections`) + 2 solo-dev (`/design`, `/dev/game-host`) = 17. No hay home, descubrimiento, perfil ni detalle de juego.
+Global elements (not routes): `AppShell` (top bar: logo -> `/`, language selector, sound button, `AccountButton`), `AccountButton` ("sign in" icon if nobody; menu with initial: guest -> "Sign in"; account -> "My games", "Connected AIs", "Sign out"), `RouteError` (error boundary that reports telemetry).
+`RootLayout` rebuilds all pages when the identity changes (`identityKey`, also across tabs via the `storage` event).
+Total: 15 production route patterns (including the wildcard `*`: `/`, `/join`, `/sign-in`, `/sign-in/guest`, `/sign-in/complete`, `/sessions/new`, `/sessions/:uuid/host`, `/join/:code`, `/sessions/:uuid/play`, `/games`, `/games/new`, `/games/:id/edit`, `/connect-ai`, `/account/ai-connections`) + 2 dev-only (`/design`, `/dev/game-host`) = 17. There is no home, discovery, profile or game detail.
 
-Grafo (resumen):
+Graph (summary):
 ```
 / -> /join -> /join/:code -> /sessions/:uuid/play -> /join
 /join -> /sessions/new -> /sessions/:uuid/host?code= -> (juega embebido) / -> /join
@@ -115,174 +115,174 @@ menu cuenta -> /games, /account/ai-connections
 
 ---
 
-## 3. Llamadas HTTP / WebSocket
+## 3. HTTP / WebSocket calls
 
-Todas pasan por `packages/communication` (cliente) con paths/schemas de `packages/protocol`. La UI no usa `fetch`/`WebSocket` directamente salvo: `GameHostLabRoute` (dev, `fetch` de fixtures), `sound/soundPlayer.ts` (`fetch` de audio local), y `game-host` (`artifact.ts`, `assets.ts`: `fetch` de URLs firmadas de almacenamiento, sin credenciales). Las instancias viven en `services.ts` (composition root): `http`, `identity`, `sessionsApi`, `gamesApi`, `aiAccess`, `telemetry`, `sessions`, `admins`, `previews`.
+All go through `packages/communication` (client) with paths/schemas from `packages/protocol`. The UI does not use `fetch`/`WebSocket` directly except: `GameHostLabRoute` (dev, `fetch` of fixtures), `sound/soundPlayer.ts` (`fetch` of local audio), and `game-host` (`artifact.ts`, `assets.ts`: `fetch` of signed storage URLs, without credentials). The instances live in `services.ts` (composition root): `http`, `identity`, `sessionsApi`, `gamesApi`, `aiAccess`, `telemetry`, `sessions`, `admins`, `previews`.
 
-Transporte HTTP (`http.ts`): Bearer automatico desde `app.credentials`, renovacion de credencial en el transporte (ADR-0009, reintento unico tras `token_invalid`), `onCredentialRejected -> signOut`, cuerpos crudos y cabeceras extra (`Idempotency-Key`), errores tipados en `Result<T,E>` (`result.ts`).
+HTTP transport (`http.ts`): automatic Bearer from `app.credentials`, credential renewal in the transport (ADR-0009, single retry after `token_invalid`), `onCredentialRejected -> signOut`, raw bodies and extra headers (`Idempotency-Key`), typed errors in `Result<T,E>` (`result.ts`).
 
-### 3.1 Endpoints HTTP (44) -> funcion cliente -> pantallas
+### 3.1 HTTP endpoints (44) -> client function -> screens
 
-| Endpoint | Funcion cliente | Pantallas / features que la usan |
+| Endpoint | Client function | Screens / features that use it |
 | --- | --- | --- |
-| `GET /v1/identity/operations` | `IdentityClient.listOperations` | Arranque (`startServices.loadOperations`, reintento 1-30 s); alimenta `RequireOperation` en todas las rutas protegidas |
+| `GET /v1/identity/operations` | `IdentityClient.listOperations` | Startup (`startServices.loadOperations`, retry 1-30 s); feeds `RequireOperation` on all protected routes |
 | `POST /v1/guests` | `identity.createGuest` | `/sign-in/guest` (`createGuestSignIn`) |
-| `POST /v1/identity/refresh` | `identity.refresh` | Transporte/app-core (arranque, 1 min antes de expirar, vuelta a pestana, `token_invalid`), tambien tras fijar nombre |
-| `POST /v1/identity/logout` | `identity.logout` | Menu de cuenta "Cerrar sesion" (`app.signOut`) |
+| `POST /v1/identity/refresh` | `identity.refresh` | Transport/app-core (startup, 1 min before expiry, return to tab, `token_invalid`), also after setting the name |
+| `POST /v1/identity/logout` | `identity.logout` | Account menu "Sign out" (`app.signOut`) |
 | `PUT /v1/identity/me/display-name` | `identity.setDisplayName` | `DisplayNameScreen` (`createDisplayNameSetup`) |
-| `GET /v1/identity/login/providers` | `identity.listLoginProviders` | `/sign-in` (`accountSignIn.loadProviders`, reintento) |
-| `POST /v1/identity/login/start` | `identity.startLogin` | `/sign-in` (PKCE S256; con Bearer de invitado "hereda" la cuenta) |
-| `POST /v1/identity/login/complete` | `identity.completeLogin` | `/sign-in/complete` (`replaces_refresh_token` = invitado) |
-| `POST /v1/sessions` | `SessionsClient.createSession` | `/sessions/new` (llamada directa desde el componente, ver 4) |
-| `POST /v1/client-telemetry` | `telemetryReporter` (lotes 30 s / al ocultar con keepalive) | Join, Session Play, `RouteError` (clasificado en `src/telemetry/`, ADR-0007) |
+| `GET /v1/identity/login/providers` | `identity.listLoginProviders` | `/sign-in` (`accountSignIn.loadProviders`, retry) |
+| `POST /v1/identity/login/start` | `identity.startLogin` | `/sign-in` (PKCE S256; with a guest Bearer it "inherits" the account) |
+| `POST /v1/identity/login/complete` | `identity.completeLogin` | `/sign-in/complete` (`replaces_refresh_token` = guest) |
+| `POST /v1/sessions` | `SessionsClient.createSession` | `/sessions/new` (direct call from the component, see 4) |
+| `POST /v1/client-telemetry` | `telemetryReporter` (batches 30 s / on hide with keepalive) | Join, Session Play, `RouteError` (classified in `src/telemetry/`, ADR-0007) |
 | `GET /v1/ai-authorizations/{id}` | `AiAccessClient.readAuthorization` | `/connect-ai` |
 | `POST /v1/ai-authorizations/{id}/approve` | `aiAccess.approve` (via `decide`) | `/connect-ai` |
 | `POST /v1/ai-authorizations/{id}/deny` | `aiAccess.deny` | `/connect-ai` |
 | `GET /v1/ai-connections` | `aiAccess.listConnections` | `/account/ai-connections` |
 | `POST /v1/ai-connections/{id}/revoke` | `aiAccess.revokeConnection` | `/account/ai-connections` |
 | `GET /v1/games` | `GamesClient.listGames` | `/games` (`createMyGamesList`) |
-| `POST /v1/games` | `gamesClient.createGame` | `/games/new` (llamada directa; admite `template`) |
-| `GET /v1/templates` | `browseTemplates` | `TemplatePicker` en `/games/new` y en workspace `history` |
-| `GET /v1/templates/search` | `searchTemplates` | idem |
-| `GET /v1/templates/{id}` | `inspectTemplate` | idem |
-| `GET /v1/templates/{id}/files` | `readTemplateFiles` | idem (inspeccion) |
-| `POST /v1/games/{id}/draft/template` | `useTemplate` | workspace `history` ("Empezar de nuevo desde una plantilla") |
-| `GET /v1/games/{id}` | `readCard` | workspace (`publish`, y carga inicial de `createGamePublishing`) |
-| `PATCH /v1/games/{id}` | `updateCard` | `publish` (nombre/descripcion) |
+| `POST /v1/games` | `gamesClient.createGame` | `/games/new` (direct call; supports `template`) |
+| `GET /v1/templates` | `browseTemplates` | `TemplatePicker` in `/games/new` and in workspace `history` |
+| `GET /v1/templates/search` | `searchTemplates` | same |
+| `GET /v1/templates/{id}` | `inspectTemplate` | same |
+| `GET /v1/templates/{id}/files` | `readTemplateFiles` | same (inspection) |
+| `POST /v1/games/{id}/draft/template` | `useTemplate` | workspace `history` ("Start over from a template") |
+| `GET /v1/games/{id}` | `readCard` | workspace (`publish`, and initial load of `createGamePublishing`) |
+| `PATCH /v1/games/{id}` | `updateCard` | `publish` (name/description) |
 | `PUT /v1/games/{id}/logo` | `uploadLogo` | `publish` |
 | `POST /v1/games/{id}/logo/remove` | `removeLogo` | `publish` |
-| `POST /v1/games/{id}/photos` | `uploadPhoto` | `publish` (hasta 8 fotos) |
+| `POST /v1/games/{id}/photos` | `uploadPhoto` | `publish` (up to 8 photos) |
 | `POST /v1/games/{id}/photos/{photoUUID}/remove` | `removePhoto` | `publish` |
-| `POST /v1/games/{id}/publish` | `publish` | `publish` (publico/privado, bloqueadores) |
-| `POST /v1/games/{id}/editions` | `openEdition` | `publish` ("Crear nueva version") |
-| `GET /v1/games/{id}/draft?content=true` | `readDraft` | workspace completo (carga y tras cada revision) |
-| `POST /v1/games/{id}/draft/changes` | `applyChange` | `ai` (aplicar cambio pegado), `files` (guardar archivo) |
+| `POST /v1/games/{id}/publish` | `publish` | `publish` (public/private, blockers) |
+| `POST /v1/games/{id}/editions` | `openEdition` | `publish` ("Create new version") |
+| `GET /v1/games/{id}/draft?content=true` | `readDraft` | whole workspace (load and after each revision) |
+| `POST /v1/games/{id}/draft/changes` | `applyChange` | `ai` (apply pasted change), `files` (save file) |
 | `POST /v1/games/{id}/draft/restore` | `restoreRevision` | `history` |
-| `GET /v1/games/{id}/draft/revisions` | `listRevisions` | `history` (paginado de 100) |
-| `GET /v1/games/{id}/draft/diff` | `diffRevisions` | `history` (comparar) |
+| `GET /v1/games/{id}/draft/revisions` | `listRevisions` | `history` (paginated by 100) |
+| `GET /v1/games/{id}/draft/diff` | `diffRevisions` | `history` (compare) |
 | `PUT /v1/games/{id}/draft/assets/{key}` | `uploadAsset` | `assets` |
 | `POST /v1/games/{id}/draft/assets/{key}/remove` | `removeAsset` | `assets` |
-| `GET /v1/games/{id}/draft/build?revision=&wait=20` | `readBuild` | `build` / cabecera del workspace (long poll) |
+| `GET /v1/games/{id}/draft/build?revision=&wait=20` | `readBuild` | `build` / workspace header (long poll) |
 | `GET /v1/games/{id}/ai-link` | `readAiLink` | `share` |
-| `POST /v1/games/{id}/ai-link` | `createAiLink` | `share` (el enlace se muestra una sola vez, solo en memoria) |
+| `POST /v1/games/{id}/ai-link` | `createAiLink` | `share` (the link is shown only once, in memory only) |
 | `POST /v1/games/{id}/ai-link/revoke` | `revokeAiLink` | `share` |
-| `POST /v1/games/{id}/draft/previews` | `createPreview` | `preview` ("Probar juego") |
-| `POST /v1/games/{id}/draft/simulations` | `runSimulation` | `scenarios` (escenario pegado, `{scenario_path}` o `{all:true}`) |
-| `GET /v1/games/{id}/draft/simulations/{resultID}/state` | `readSimulationState` | `scenarios` (inspeccionar estado) |
-| `GET <URL firmada de almacenamiento>` (artefacto HTML y assets) | `game-host` `createArtifactLoader` / `createAssetLoader` (sin credenciales, verifican SHA-256) | Session Play, host (ver jugador), preview |
+| `POST /v1/games/{id}/draft/previews` | `createPreview` | `preview` ("Test game") |
+| `POST /v1/games/{id}/draft/simulations` | `runSimulation` | `scenarios` (pasted scenario, `{scenario_path}` or `{all:true}`) |
+| `GET /v1/games/{id}/draft/simulations/{resultID}/state` | `readSimulationState` | `scenarios` (inspect state) |
+| `GET <signed storage URL>` (HTML artifact and assets) | `game-host` `createArtifactLoader` / `createAssetLoader` (no credentials, verify SHA-256) | Session Play, host (watch player), preview |
 
-Nota: `GET /v1/identity/me` existe en el contrato (`BACKEND_CONTRACT.md`) y hay operacion `VIEW_OWN_IDENTITY`, pero **no hay cliente que lo llame** (verificado por grep). Endpoints del `.md` del contrato no consumidos: ese y `GET /v1/identity/login/{provider}/callback` (lo visita el navegador, redireccion del proveedor).
+Note: `GET /v1/identity/me` exists in the contract (`BACKEND_CONTRACT.md`) and there is a `VIEW_OWN_IDENTITY` operation, but **no client calls it** (verified by grep). Endpoints in the contract `.md` not consumed: that one and `GET /v1/identity/login/{provider}/callback` (visited by the browser, provider redirect).
 
-### 3.2 Protocolo realtime (WebSocket) — `packages/protocol/src/realtime`, `packages/communication`
+### 3.2 Realtime protocol (WebSocket) — `packages/protocol/src/realtime`, `packages/communication`
 
-| Conexion | Path | Cliente | Quien la usa |
+| Connection | Path | Client | Who uses it |
 | --- | --- | --- | --- |
-| Jugador por codigo | `/v1/play/join/{joinCode}?device=desktop\|mobile` | `SessionConnector` -> `SessionConnection` (`sessionConnection.ts`) | `/join/:code` |
-| Jugador por Session | `/v1/play/join/sessions/{uuid}/player?device=...` | idem | `/sessions/:uuid/play`; reconexion; creador que juega |
-| Admin (creador) | `/v1/play/join/sessions/{uuid}/admin` | `AdminConnector` -> `AdminConnection` (`adminConnection.ts`) | `/sessions/:uuid/host` |
-| Preview (creador prueba su borrador) | `/v1/play/previews/{previewUUID}/connect` | `PreviewConnector` -> `PreviewConnection` (`previewConnection.ts`) | workspace `preview` |
+| Player by code | `/v1/play/join/{joinCode}?device=desktop\|mobile` | `SessionConnector` -> `SessionConnection` (`sessionConnection.ts`) | `/join/:code` |
+| Player by Session | `/v1/play/join/sessions/{uuid}/player?device=...` | same | `/sessions/:uuid/play`; reconnection; creator who plays |
+| Admin (creator) | `/v1/play/join/sessions/{uuid}/admin` | `AdminConnector` -> `AdminConnection` (`adminConnection.ts`) | `/sessions/:uuid/host` |
+| Preview (creator tests their draft) | `/v1/play/previews/{previewUUID}/connect` | `PreviewConnector` -> `PreviewConnection` (`previewConnection.ts`) | workspace `preview` |
 
-- Auth: el token viaja como subprotocolo `base64url.bearer.authorization.playhoot.<token>` + subprotocolo `playhoot.v1` (los navegadores no ponen cabeceras en WS).
-- Cliente -> servidor (jugador): `sample{sequence,inputs}` (snapshot completo, secuencia por conexion, coalescido a 60/s, <= 32 KiB), `command{token,name,payload}` (idempotente por token, reintenta `rate_limited` con el mismo token), `resync`, `leave`, `game_fault{kind,detail}` (reporte de fallos del juego: `artifact_unreachable`, `artifact_hash_mismatch`, `ready_timeout`, `unsupported_bridge_version`, `container_violation`, `bridge_abuse`).
-- Servidor -> jugador (zod): `rejected`, `lobby_update` (con limites min/max), `roster_update` (presencia: active/reconnecting/disconnected/left), `session_started` (UUID, participantes, `frontend{url,sha256,viewport,assets}`), `player_view` (FULL/parches/ack), `command_result`, `session_ended`, `lobby_closed`, `leave_result`.
-- Admin: `start_session`, `cancel_session`, `select_perspective{participant_id}`, `resync`; respuestas `*_result{outcome}`, mas `lobby_update`, `session_started` (sin participante del creador), `player_view` del participante observado, `session_ended`, `rejected`. Admin y jugador son **siempre conexiones separadas** aunque el creador juegue.
-- Preview: `act_as`, `sample`, `command`, `resync`, `pause`, `resume`, `end`; servidor `preview_started`, `acting_as`, `paused`, `resumed`, `error`, `preview_ended{reason}`, y vistas del participante.
-- Vistas: `createViewTracker`/`applyViewPatch` (`viewState.ts`) reconstruyen estado con FULL/parches/ack-only; hueco -> `resync` automatico. Clasificacion de cierre (`unreachable`, `session-ended`, `left`, `replaced`, `disconnected`, `retryable`, `protocol`, `game-data-invalid`). Reconexion en las features (1 s, 2 s, 4 s; 3 intentos; nunca tras `replaced`; durante juego la fase sigue `started` con `connection: 'reconnecting'`).
-- Valores del backend nunca tratados como lista cerrada (`docs/engineering/standards/backend-contract-values.md`).
+- Auth: the token travels as the subprotocol `base64url.bearer.authorization.playhoot.<token>` + subprotocol `playhoot.v1` (browsers cannot set headers on WS).
+- Client -> server (player): `sample{sequence,inputs}` (full snapshot, sequence per connection, coalesced to 60/s, <= 32 KiB), `command{token,name,payload}` (idempotent by token, retries `rate_limited` with the same token), `resync`, `leave`, `game_fault{kind,detail}` (game failure report: `artifact_unreachable`, `artifact_hash_mismatch`, `ready_timeout`, `unsupported_bridge_version`, `container_violation`, `bridge_abuse`).
+- Server -> player (zod): `rejected`, `lobby_update` (with min/max limits), `roster_update` (presence: active/reconnecting/disconnected/left), `session_started` (UUID, participants, `frontend{url,sha256,viewport,assets}`), `player_view` (FULL/patches/ack), `command_result`, `session_ended`, `lobby_closed`, `leave_result`.
+- Admin: `start_session`, `cancel_session`, `select_perspective{participant_id}`, `resync`; responses `*_result{outcome}`, plus `lobby_update`, `session_started` (without the creator's participant), `player_view` of the observed participant, `session_ended`, `rejected`. Admin and player are **always separate connections** even if the creator plays.
+- Preview: `act_as`, `sample`, `command`, `resync`, `pause`, `resume`, `end`; server `preview_started`, `acting_as`, `paused`, `resumed`, `error`, `preview_ended{reason}`, and participant views.
+- Views: `createViewTracker`/`applyViewPatch` (`viewState.ts`) rebuild state with FULL/patches/ack-only; a gap -> automatic `resync`. Close classification (`unreachable`, `session-ended`, `left`, `replaced`, `disconnected`, `retryable`, `protocol`, `game-data-invalid`). Reconnection in the features (1 s, 2 s, 4 s; 3 attempts; never after `replaced`; during a game the phase stays `started` with `connection: 'reconnecting'`).
+- Backend values are never treated as a closed list (`docs/engineering/standards/backend-contract-values.md`).
 
 ---
 
-## 4. Capas (UI / estado-logica / llamadas externas)
+## 4. Layers (UI / state-logic / external calls)
 
-Modelo del repo (ARCHITECTURE.md §4): `Presentacion -> Feature State -> Communication ports -> Backend`.
+Repo model (ARCHITECTURE.md §4): `Presentation -> Feature State -> Communication ports -> Backend`.
 
-| Capa | Donde | Ejemplos concretos |
+| Layer | Where | Concrete examples |
 | --- | --- | --- |
-| Presentacion (UI) | `apps/web/src/features/<feature>/*.tsx`, `apps/web/src/ui/*` | `session-join/SessionScreen.tsx` recibe `state`, `layout`, `actions` por props y hace `switch (view.phase)`; `session-play/PlayScreen.tsx` recibe todo por props (`layout`, `players`, `game`, `onLeave`) |
-| Estado + logica de feature | `packages/features/*/src/*.ts` (stores zustand vanilla, sin React ni router) | `session-join/src/joinSession.ts`, `session-host/src/hostSession.ts`, `game-authoring/src/gameAuthoring.ts`, `sign-in/src/guestSignIn.ts` |
-| Estado global | `packages/app-core` (`createAppState`: auth, idioma, operaciones) + `packages/device` | `apps/web/src/app/ServicesContext.tsx` expone hooks `useAuth`, `useOperationAccess`, `useDeviceCapabilities` |
-| Llamadas externas | `packages/communication` (+ `protocol`) | `gamesClient.ts`, `identityClient.ts`, `sessionConnection.ts`; construidos una vez en `apps/web/src/app/services.ts` |
-| Adaptadores de plataforma | `apps/web/src/platform/*` | `browserCredentialStore.ts` (localStorage `playhoot.credential.v2`), `iframeGameContainer.ts`, `browserArtifactCache.ts` (Cache Storage), `browserDeviceCapabilities.ts` |
+| Presentation (UI) | `apps/web/src/features/<feature>/*.tsx`, `apps/web/src/ui/*` | `session-join/SessionScreen.tsx` receives `state`, `layout`, `actions` via props and does `switch (view.phase)`; `session-play/PlayScreen.tsx` receives everything via props (`layout`, `players`, `game`, `onLeave`) |
+| Feature state + logic | `packages/features/*/src/*.ts` (vanilla zustand stores, no React or router) | `session-join/src/joinSession.ts`, `session-host/src/hostSession.ts`, `game-authoring/src/gameAuthoring.ts`, `sign-in/src/guestSignIn.ts` |
+| Global state | `packages/app-core` (`createAppState`: auth, language, operations) + `packages/device` | `apps/web/src/app/ServicesContext.tsx` exposes hooks `useAuth`, `useOperationAccess`, `useDeviceCapabilities` |
+| External calls | `packages/communication` (+ `protocol`) | `gamesClient.ts`, `identityClient.ts`, `sessionConnection.ts`; built once in `apps/web/src/app/services.ts` |
+| Platform adapters | `apps/web/src/platform/*` | `browserCredentialStore.ts` (localStorage `playhoot.credential.v2`), `iframeGameContainer.ts`, `browserArtifactCache.ts` (Cache Storage), `browserDeviceCapabilities.ts` |
 
-Como se conecta: la ruta (`*Route.tsx`) crea la instancia de feature en un `useEffect` (`createJoinSession(...)`, `createGameAuthoring(...)`), la guarda con `useState`, la destruye con `dispose()`, y pasa `useStore(feature.store)` a una pantalla. "Salir de una ruta descarta el estado" (invariante 12).
+How it connects: the route (`*Route.tsx`) creates the feature instance in a `useEffect` (`createJoinSession(...)`, `createGameAuthoring(...)`), stores it with `useState`, destroys it with `dispose()`, and passes `useStore(feature.store)` to a screen. "Leaving a route discards the state" (invariant 12).
 
-Cumplimiento del requisito "UI pura / una capa de estado+logica / capa de llamadas externas" (hallazgos objetivos):
-- Estado+logica y llamadas estan separados en paquetes con lint de frontera. La UI no importa `communication` directamente salvo tipos y constructores de `services.ts`.
-- **Excepciones verificadas** donde la UI llama a un cliente sin pasar por estado de feature: `CreateGameRoute.tsx` (`services.gamesApi.createGame(...)`) y `CreateSessionRoute.tsx` (`services.sessionsApi.createSession(...)`) hacen la llamada, gestionan idempotency key y estados `creating/failed` en `useState`; `SignInRoute.tsx` implementa un reintento de proveedores con `setTimeout` en el componente; `GameWorkspaceRoute.tsx`/`HostGameView.tsx`/`PreviewSection.tsx` construyen instancias de feature dentro de hooks de la propia UI (`useGameAuthoring`, `useWatchedPlay`, `usePreviewPlay`).
-- Presentacion no es 100% "tonta": `SessionScreen.tsx` y `PlayScreen.tsx` reproducen sonido (`useSound`), usan `setTimeout`, estado local de UI y `useEffect`; `SessionRoute.tsx` contiene logica de navegacion (reemplazar URL, copiar invitacion al portapapeles), y `HostRoute.tsx` (561 lineas) calcula textos de estado. `outcomeCopy.ts` mapea resultados a ids de mensaje (presentacion).
-- Regla de textos: feature state no produce texto, expone `kind`s (docs/engineering/standards/user-facing-text.md, regla 5).
-- No existe capa "service/use-case" propia ("No service/use-case layer re-implementing backend logic", ARCHITECTURE.md §4.2). Los stores de feature se llaman a si mismos "Feature State".
+Compliance with the requirement "pure UI / one state+logic layer / external calls layer" (objective findings):
+- State+logic and calls are separated into packages with boundary lint. The UI does not import `communication` directly except types and constructors from `services.ts`.
+- **Verified exceptions** where the UI calls a client without going through feature state: `CreateGameRoute.tsx` (`services.gamesApi.createGame(...)`) and `CreateSessionRoute.tsx` (`services.sessionsApi.createSession(...)`) make the call, manage the idempotency key and `creating/failed` states in `useState`; `SignInRoute.tsx` implements a provider retry with `setTimeout` in the component; `GameWorkspaceRoute.tsx`/`HostGameView.tsx`/`PreviewSection.tsx` build feature instances inside the UI's own hooks (`useGameAuthoring`, `useWatchedPlay`, `usePreviewPlay`).
+- Presentation is not 100% "dumb": `SessionScreen.tsx` and `PlayScreen.tsx` play sound (`useSound`), use `setTimeout`, local UI state and `useEffect`; `SessionRoute.tsx` contains navigation logic (replace URL, copy invitation to the clipboard), and `HostRoute.tsx` (561 lines) computes status texts. `outcomeCopy.ts` maps results to message ids (presentation).
+- Text rule: feature state does not produce text, it exposes `kind`s (docs/engineering/standards/user-facing-text.md, rule 5).
+- There is no dedicated "service/use-case" layer ("No service/use-case layer re-implementing backend logic", ARCHITECTURE.md §4.2). The feature stores call themselves "Feature State".
 
-### Responsive: implementaciones separadas o una sola
+### Responsive: separate implementations or a single one
 
-Hibrido, decidido por ruta (`features/layout.ts`: `selectLayout` -> `'compact' | 'wide'` segun `orientation === 'landscape' && displayClass !== 'compact'`, via `useLayout()` que lee el store de `packages/device`):
-- **Variantes JSX separadas en el borde de la ruta** (render distinto): `EnterCodeRoute.tsx` (`SplitStage` vs `Stage`), `SignInRoute.tsx`, `GuestSignInRoute.tsx`, `DisplayNameScreen.tsx`, `PlayScreen.tsx` (riel lateral vs barra superior; juego inmersivo con `AppShell immersive`).
-- **Misma estructura con clases distintas segun `layout`**: lobby (`SessionScreen.tsx`, `HostRoute.tsx`: `lobbyGrid`/`lobbyGridWide`), workspace (`GameWorkspaceRoute.tsx`: `navWide`/`navCompact`, `bodyWide`/`bodyCompact`).
-- **Una sola implementacion fluida** para el resto: tokens `clamp()` de tipo, 5 `@media` en total (`AccountButton`, `GameWorkspace`, `Card`, `Logo`, `tokens.css` reduced-motion). Las pantallas de un solo mensaje (conectando, resultados) tienen un solo esqueleto.
-- No hay implementaciones separadas por plataforma (no existe `apps/mobile`). Doc: `docs/design/DESIGN_SYSTEM.md` "Responsive behavior".
+Hybrid, decided per route (`features/layout.ts`: `selectLayout` -> `'compact' | 'wide'` according to `orientation === 'landscape' && displayClass !== 'compact'`, via `useLayout()` which reads the `packages/device` store):
+- **Separate JSX variants at the route edge** (different render): `EnterCodeRoute.tsx` (`SplitStage` vs `Stage`), `SignInRoute.tsx`, `GuestSignInRoute.tsx`, `DisplayNameScreen.tsx`, `PlayScreen.tsx` (side rail vs top bar; immersive game with `AppShell immersive`).
+- **Same structure with different classes depending on `layout`**: lobby (`SessionScreen.tsx`, `HostRoute.tsx`: `lobbyGrid`/`lobbyGridWide`), workspace (`GameWorkspaceRoute.tsx`: `navWide`/`navCompact`, `bodyWide`/`bodyCompact`).
+- **A single fluid implementation** for the rest: type `clamp()` tokens, 5 `@media` in total (`AccountButton`, `GameWorkspace`, `Card`, `Logo`, `tokens.css` reduced-motion). Single-message screens (connecting, results) have a single skeleton.
+- There are no per-platform separate implementations (`apps/mobile` does not exist). Doc: `docs/design/DESIGN_SYSTEM.md` "Responsive behavior".
 
 ---
 
-## 5. Runtime del juego en el cliente
+## 5. Game runtime on the client
 
-- **Carga/embebido** (`packages/game-host/src/gameHost.ts`, `artifact.ts`, `apps/web/src/platform/iframeGameContainer.ts`; ADR-0005/0006): `startGameHost`: `fetch` del artefacto (HTML unico autocontenido) a URL firmada **sin credenciales** -> verificacion SHA-256 -> cache por hash (Cache Storage `playhoot-game-artifacts-v1`) -> contenedor -> handshake `ready` con negociacion de version (timeout 10 s) -> `start` con contexto + proyeccion actual.
-- **Aislamiento (verificado en codigo)**: `<iframe sandbox="allow-scripts">` con el HTML por `srcdoc`; `<meta>` CSP puesto primero en el `<head>`: `default-src 'none'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline' blob:; img/media/font-src blob: data:; connect-src 'none'; base-uri 'none'; form-action 'none'`. Se eliminan frames anidados y shadow roots declarativos del HTML y se inyecta un script guardia (borra WebRTC, `parseHTMLUnsafe`, vigila `MutationObserver` y detiene el juego si inserta un frame). La pagina anfitriona declara `frame-src 'none'` (`index.html`). Los mensajes solo se aceptan de ese iframe. El iframe siempre tiene el tamano logico del juego y se escala y centra con barras (`fitGameViewport`, nunca estirado).
-- **Puente** (`packages/protocol/src/bridge`, versiones 1 y 2): mensajes `postMessage` con marca `playhoot.bridge`. Juego -> Host: `ready`, `sample`, `command`, `request_asset`. Host -> juego: `start`, `presentation` (v2: escala, tamano en pantalla, safe area, densidad, puntero, preferencias), `update` (proyeccion completa/eventos/errores/ack traducido), `command_result`, `asset`, `incompatible`. Tokens, secuencias de conexion y el WS real **nunca llegan al juego**. Validacion zod de cada mensaje del juego en el Host, limites por tipo y total (`bridgeGuard.ts`; un juego fuera de limites 5 s seguidos se detiene como `bridge-abuse`), todo fallo se reporta al backend como `game_fault`.
-- **Assets** (ADR-0008, `assets.ts`): solo claves que el backend listo en `frontend.assets`; descarga sin credenciales, verifica tamano y SHA-256, cache por hash (`playhoot-game-assets-v1`), bytes transferidos al juego (blob URLs).
-- **SDK del cliente del juego**:
-  - `packages/game-sdk`: `createPlayhoot()` con `ready`, `onProjection`, `onEvent`, `onError`, `onUpdate`, `sample`, `command`, `assets`/`load`/`preload`, `presentation()`/`onPresentation()` (v2); transporte elegido en runtime: `window.parent` o canal de WebView de React Native (`webViewTransport`) — preparado para movil, sin app movil.
-  - `packages/game-react`: `mountGame`, `useView`, `useCommand`, `useInputs`, `useAsset`, `usePhase`, `usePlayer`, `useGameEvent`, `useGameError`, `usePresentation`, `useText`/`defineTexts`/`useLanguage`; componentes `Screen`, `Stack`, `Grid`, `Panel`, `Text`, `Button`, `Choices`, `TextAnswer`, `Countdown`, `Scoreboard`, `AssetImage` (React Aria 3.53.1).
-  - `packages/game-core` + `game-server`: lado servidor/compartido (`defineCommands`, `defineInputs`, `defineGame`, fases declarativas, `addPoints`/`ranking`, validacion de campos con vectores compartidos con el backend `packages/game-core/src/testdata/field-vectors.json`). `sdkVersion = '1.0.0'`.
-  - `packages/game-tools`: `npm run game -- build <proyecto>` (reglas de fuente perfil `sdk-v1`, typecheck, rolldown -> `server.js` + `client.html`, `manifest.json`, `build.json`).
-- **Guia SDK para agentes IA**: `apps/web/public/docs/sdk/v1/*.md` (21 archivos, ~1100 lineas): `index`, `capabilities`, `project`, `server`, `client`, `ui`, `phases`, `config`, `templates`, `policies`, `assets`, `brief`, `building`, `changes`, `scenarios` + `examples/{drift,know-me,number-guess,pairs,quiz,tap-race}.md`. Servida estatica en `/docs/sdk/v1/*.md`; `packages/game-tools/src/guide.test.ts` la mantiene alineada con el SDK. Requiere que produccion la sirva sin fallback SPA (nota del repo).
-- **Comandos/muestras/proyecciones**: el Host es dueno de la secuencia SAMPLE, de los tokens idempotentes de COMMAND, de la revision/baseline de vista y del resync; el juego solo ve `projection`, `events`, `errors`, `ack` traducido a sus propios ids y resultados reducidos (`executed`/`rejected`/`unavailable`).
-- **Replay**: **no existe** reproductor de replays (ni en `communication` ni en `game-host`; el plan lo ubica como paso 12, fuera del proyecto).
-- **Otros usos del mismo GameHost**: vista de espectador del host (`HostGameView.tsx`, solo lectura), preview del creador (`PreviewSection.tsx`, una corrida de GameHost por participante sintetico), laboratorio dev.
+- **Loading/embedding** (`packages/game-host/src/gameHost.ts`, `artifact.ts`, `apps/web/src/platform/iframeGameContainer.ts`; ADR-0005/0006): `startGameHost`: `fetch` of the artifact (single self-contained HTML) from a signed URL **without credentials** -> SHA-256 verification -> cache by hash (Cache Storage `playhoot-game-artifacts-v1`) -> container -> `ready` handshake with version negotiation (10 s timeout) -> `start` with context + current projection.
+- **Isolation (verified in code)**: `<iframe sandbox="allow-scripts">` with the HTML via `srcdoc`; `<meta>` CSP placed first in the `<head>`: `default-src 'none'; script-src 'unsafe-inline' blob:; style-src 'unsafe-inline' blob:; img/media/font-src blob: data:; connect-src 'none'; base-uri 'none'; form-action 'none'`. Nested frames and declarative shadow roots are removed from the HTML and a guard script is injected (deletes WebRTC, `parseHTMLUnsafe`, watches with `MutationObserver` and stops the game if it inserts a frame). The host page declares `frame-src 'none'` (`index.html`). Messages are only accepted from that iframe. The iframe always has the game's logical size and is scaled and centered with bars (`fitGameViewport`, never stretched).
+- **Bridge** (`packages/protocol/src/bridge`, versions 1 and 2): `postMessage` messages with the `playhoot.bridge` mark. Game -> Host: `ready`, `sample`, `command`, `request_asset`. Host -> game: `start`, `presentation` (v2: scale, on-screen size, safe area, density, pointer, preferences), `update` (full projection/events/errors/translated ack), `command_result`, `asset`, `incompatible`. Tokens, connection sequences and the real WS **never reach the game**. Zod validation of each game message in the Host, limits per type and total (`bridgeGuard.ts`; a game outside limits for 5 s in a row is stopped as `bridge-abuse`), every failure is reported to the backend as `game_fault`.
+- **Assets** (ADR-0008, `assets.ts`): only keys that the backend listed in `frontend.assets`; download without credentials, verifies size and SHA-256, cache by hash (`playhoot-game-assets-v1`), bytes transferred to the game (blob URLs).
+- **Game client SDK**:
+  - `packages/game-sdk`: `createPlayhoot()` with `ready`, `onProjection`, `onEvent`, `onError`, `onUpdate`, `sample`, `command`, `assets`/`load`/`preload`, `presentation()`/`onPresentation()` (v2); transport chosen at runtime: `window.parent` or React Native WebView channel (`webViewTransport`) — prepared for mobile, with no mobile app.
+  - `packages/game-react`: `mountGame`, `useView`, `useCommand`, `useInputs`, `useAsset`, `usePhase`, `usePlayer`, `useGameEvent`, `useGameError`, `usePresentation`, `useText`/`defineTexts`/`useLanguage`; components `Screen`, `Stack`, `Grid`, `Panel`, `Text`, `Button`, `Choices`, `TextAnswer`, `Countdown`, `Scoreboard`, `AssetImage` (React Aria 3.53.1).
+  - `packages/game-core` + `game-server`: server/shared side (`defineCommands`, `defineInputs`, `defineGame`, declarative phases, `addPoints`/`ranking`, field validation with vectors shared with the backend `packages/game-core/src/testdata/field-vectors.json`). `sdkVersion = '1.0.0'`.
+  - `packages/game-tools`: `npm run game -- build <project>` (source rules profile `sdk-v1`, typecheck, rolldown -> `server.js` + `client.html`, `manifest.json`, `build.json`).
+- **SDK guide for AI agents**: `apps/web/public/docs/sdk/v1/*.md` (21 files, ~1100 lines): `index`, `capabilities`, `project`, `server`, `client`, `ui`, `phases`, `config`, `templates`, `policies`, `assets`, `brief`, `building`, `changes`, `scenarios` + `examples/{drift,know-me,number-guess,pairs,quiz,tap-race}.md`. Served statically at `/docs/sdk/v1/*.md`; `packages/game-tools/src/guide.test.ts` keeps it aligned with the SDK. Requires production to serve it without SPA fallback (repo note).
+- **Commands/samples/projections**: the Host owns the SAMPLE sequence, the idempotent COMMAND tokens, the view revision/baseline and the resync; the game only sees `projection`, `events`, `errors`, `ack` translated to its own ids and reduced results (`executed`/`rejected`/`unavailable`).
+- **Replay**: a replay player **does not exist** (neither in `communication` nor in `game-host`; the plan places it as step 12, outside the project).
+- **Other uses of the same GameHost**: host spectator view (`HostGameView.tsx`, read-only), creator preview (`PreviewSection.tsx`, one GameHost run per synthetic participant), dev lab.
 
 ---
 
 ## 6. Design system
 
-- **Donde se define**: `apps/web/src/ui/tokens.css` (paleta, semanticos, tipo, forma, espacio, sombras, duraciones, easing, colores por asiento `--player-1..8`, colores del buho), `ui/motion.css` (vocabulario de movimiento), componentes en `apps/web/src/ui/`, doc `docs/design/DESIGN_SYSTEM.md` (aceptado 2026-10-20), ADR-0003 (CSS Modules + tokens). Regla: ningun valor de color/duracion/sombra dentro de un componente; derivados con `color-mix`.
-- **Tema**: solo oscuro (`color-scheme: dark`), "game night": fondo indigo `#141134`, superficie `#211c52`, accion primaria ambar `#ffc53d`, acento coral `#ff6f91`, exito menta `#4ee0a6`, peligro rojo `#ff6b6b`; 8 colores de jugador (ambar, coral, menta, cielo, violeta, lima, naranja, teal). No hay tema claro (pregunta abierta en el doc).
-- **Tipografia**: Fredoka (display/titulos) y Nunito (cuerpo), autoalojadas via `@fontsource-variable`; Roboto solo para el boton de Google. Tamanos como tokens con `clamp()`.
-- **Forma**: radios 10/16/24/32/pill; espacio base 4 px; "borde de presion" `--edge: 4px` bajo botones/fichas/avatares (aspecto de pieza de juego); cards radio 32 con degradado sutil `linear-gradient(180deg, sheen, transparent 40%)`.
-- **Componentes propios** (12): `AppShell` (+`Stage`, `SplitStage`), `Avatar`, `Button` (primary/secondary/danger/ghost, md/lg, block, loading, prop `sound`), `Card`, `CodeInput`, `CodeTiles`, `Confetti`, `Logo` (wordmark "play**hoot**"), `Owl` (mascota Hoot con moods happy/sleepy/surprised, parpadeo, hop/shake), `Starfield` (estrellas fijas con parpadeo), `TextField`. Mas `AccountButton`, `LanguagePicker`, `SoundToggle`, `Notice`. No hay libreria de componentes de terceros en el host (solo React Aria dentro del SDK del juego).
-- **Iconos**: SVG inline sueltos (p. ej. `PersonIcon` en `AccountButton.tsx`); sin libreria de iconos. **Emoji: 0 ocurrencias** en `apps/web/src` (grep). Gradientes: 7 usos CSS, todos sutiles (brillo de card, fondo del cielo con 2 radiales en `tokens.css`, resalte de fila).
-- **Animacion**: CSS puro, 19 `@keyframes`; clases globales `motion-rise/pop/fade/bump/hop/shake/cascade` (cada `Stage` entra en cascada); respeta `prefers-reduced-motion`. Sin libreria de animacion.
-- **Sonido**: reproductor Web Audio (`src/sound/`), mute persistido en localStorage, tonos placeholder si falta el archivo, musica de lobby en bucle.
-- **Assets de marca**: registro `src/assets/assets.json` (19 assets); solo existen en `public/` `favicon.svg`, `assets/brand/google-g.svg` y `site.webmanifest`. **Faltan** (segun `docs/design/ASSETS.md`, 17 MISSING): iconos PWA 192/512/maskable/apple-touch, `og-share.png`, todos los sonidos/musica.
-- **Look actual resumido (objetivo)**: pagina oscura nocturna con estrellas y dos resplandores radiales; cards oscuras de borde redondeado centradas en columna (480 px, o 960 px "wide"); un solo boton ambar como accion principal; buho vectorial como mascota/indicador de carga; fichas de letras para el codigo; texto redondeado. Sin grids de cards de catalogo (no hay catalogo), sin emoji, sin kit por defecto.
-- Guia viva en dev: `/design`.
+- **Where it is defined**: `apps/web/src/ui/tokens.css` (palette, semantics, type, shape, spacing, shadows, durations, easing, per-seat colors `--player-1..8`, owl colors), `ui/motion.css` (motion vocabulary), components in `apps/web/src/ui/`, doc `docs/design/DESIGN_SYSTEM.md` (accepted 2026-10-20), ADR-0003 (CSS Modules + tokens). Rule: no color/duration/shadow value inside a component; derived values with `color-mix`.
+- **Theme**: dark only (`color-scheme: dark`), "game night": indigo background `#141134`, surface `#211c52`, primary action amber `#ffc53d`, coral accent `#ff6f91`, mint success `#4ee0a6`, red danger `#ff6b6b`; 8 player colors (amber, coral, mint, sky, violet, lime, orange, teal). There is no light theme (open question in the doc).
+- **Typography**: Fredoka (display/titles) and Nunito (body), self-hosted via `@fontsource-variable`; Roboto only for the Google button. Sizes as tokens with `clamp()`.
+- **Shape**: radii 10/16/24/32/pill; base spacing 4 px; "pressure edge" `--edge: 4px` under buttons/tiles/avatars (game-piece look); cards radius 32 with a subtle gradient `linear-gradient(180deg, sheen, transparent 40%)`.
+- **Own components** (12): `AppShell` (+`Stage`, `SplitStage`), `Avatar`, `Button` (primary/secondary/danger/ghost, md/lg, block, loading, prop `sound`), `Card`, `CodeInput`, `CodeTiles`, `Confetti`, `Logo` (wordmark "play**hoot**"), `Owl` (Hoot mascot with moods happy/sleepy/surprised, blinking, hop/shake), `Starfield` (fixed stars with twinkle), `TextField`. Plus `AccountButton`, `LanguagePicker`, `SoundToggle`, `Notice`. There is no third-party component library in the host (only React Aria inside the game SDK).
+- **Icons**: loose inline SVGs (e.g. `PersonIcon` in `AccountButton.tsx`); no icon library. **Emoji: 0 occurrences** in `apps/web/src` (grep). Gradients: 7 CSS uses, all subtle (card sheen, sky background with 2 radials in `tokens.css`, row highlight).
+- **Animation**: pure CSS, 19 `@keyframes`; global classes `motion-rise/pop/fade/bump/hop/shake/cascade` (each `Stage` enters in cascade); respects `prefers-reduced-motion`. No animation library.
+- **Sound**: Web Audio player (`src/sound/`), mute persisted in localStorage, placeholder tones if the file is missing, looping lobby music.
+- **Brand assets**: registry `src/assets/assets.json` (19 assets); only `favicon.svg`, `assets/brand/google-g.svg` and `site.webmanifest` exist in `public/`. **Missing** (per `docs/design/ASSETS.md`, 17 MISSING): PWA icons 192/512/maskable/apple-touch, `og-share.png`, all sounds/music.
+- **Current look summary (objective)**: dark night page with stars and two radial glows; dark cards with rounded borders centered in a column (480 px, or 960 px "wide"); a single amber button as the primary action; vector owl as mascot/loading indicator; letter tiles for the code; rounded text. No catalog card grids (there is no catalog), no emoji, no default kit.
+- Living guide in dev: `/design`.
 
 ---
 
-## 7. UI de creacion / autoria de juegos
+## 7. Game creation / authoring UI
 
-Ruta `/games/new` + `/games/:gameUUID/edit?section=` (`apps/web/src/features/game-authoring/`, estado en `packages/features/game-authoring`). El creador **no escribe codigo en la web con IA integrada**: trabaja con su propia IA externa (Claude, ChatGPT...) que lee un enlace/MCP y propone cambios; la web muestra, aplica y prueba.
+Route `/games/new` + `/games/:gameUUID/edit?section=` (`apps/web/src/features/game-authoring/`, state in `packages/features/game-authoring`). The creator **does not write code in the web app with an integrated AI**: they work with their own external AI (Claude, ChatGPT...) that reads a link/MCP and proposes changes; the web app shows, applies and tests.
 
-| Seccion (`?section=`) | Componente | Funcion |
+| Section (`?section=`) | Component | Function |
 | --- | --- | --- |
-| `ai` ("Cambios de mi IA", por defecto) | `AiChangesSection` + `BriefSummary` | Pegar el JSON de cambio (`playhoot.project-change.v1`, parseo estricto `parsePastedChange`, resumen added/modified/deleted), `Aplicar cambio`; muestra el brief (`brief.json`: juego acordado y fase) |
-| `files` | `FilesSection` | Ver/editar un archivo, guardar como nueva revision |
-| `assets` ("Recursos") | `AssetsSection` | Declarar/subir/reemplazar/quitar imagen, audio, video; muestra estado, tamano, dimensiones/duracion (trabajo sin commit) |
-| `build` ("Construccion") | `BuildSection`, `BuildStatusBadge`, `DiagnosticList` | Estado del build de la revision actual (long poll), diagnosticos por linea |
-| `preview` ("Probar juego") | `PreviewSection` | Partida privada del build actual con N participantes sinteticos, jugar como cada uno, pausar/reanudar/reiniciar/terminar, nota si el borrador avanzo |
-| `scenarios` ("Escenarios") | `ScenariosSection` | Pegar escenario (`playhoot.scenario.v1`), ejecutar el actual/guardados/todos, resumen + JSON completo copiable, inspeccionar estado |
-| `history` ("Historial") | `HistorySection` + `TemplatePicker` | Revisiones (paginadas), comparar (diff), restaurar, "empezar desde una plantilla" |
-| `share` ("Compartir con mi IA") | `ShareSection` | Crear/renovar/revocar el enlace para la IA; mensaje y enlace copiables (mostrado una sola vez, en memoria) |
-| `publish` ("Ficha y publicacion") | `PublishSection` | Ficha (nombre, descripcion, logo, hasta 8 fotos), publicar revision actual como publico/privado con bloqueadores, nueva version/edicion, crear partida del juego |
+| `ai` ("My AI's changes", default) | `AiChangesSection` + `BriefSummary` | Paste the change JSON (`playhoot.project-change.v1`, strict parsing `parsePastedChange`, added/modified/deleted summary), `Apply change`; shows the brief (`brief.json`: agreed game and phase) |
+| `files` | `FilesSection` | View/edit a file, save as a new revision |
+| `assets` ("Resources") | `AssetsSection` | Declare/upload/replace/remove image, audio, video; shows state, size, dimensions/duration (uncommitted work) |
+| `build` ("Build") | `BuildSection`, `BuildStatusBadge`, `DiagnosticList` | Build state of the current revision (long poll), diagnostics per line |
+| `preview` ("Test game") | `PreviewSection` | Private match of the current build with N synthetic participants, play as each one, pause/resume/restart/end, note if the draft advanced |
+| `scenarios` ("Scenarios") | `ScenariosSection` | Paste scenario (`playhoot.scenario.v1`), run the current/saved/all, summary + copyable full JSON, inspect state |
+| `history` ("History") | `HistorySection` + `TemplatePicker` | Revisions (paginated), compare (diff), restore, "start from a template" |
+| `share` ("Share with my AI") | `ShareSection` | Create/renew/revoke the link for the AI; copyable message and link (shown only once, in memory) |
+| `publish` ("Card and publishing") | `PublishSection` | Card (name, description, logo, up to 8 photos), publish current revision as public/private with blockers, new version/edition, create a session of the game |
 
-Otras pantallas de creacion/cuenta: `CreateGameRoute` (nombre + `TemplatePicker` con plantillas destacadas/categorias/busqueda/inspeccion; si el catalogo esta vacio se ofrece solo el proyecto inicial), `MyGamesRoute`, `ConnectAiRoute` (consentimiento OAuth/MCP), `AiConnectionsRoute`.
-Un juego publicado sin edicion abierta abre en `publish` y las secciones de borrador explican como abrir una edicion (`PublishedNotice`).
-Pendientes en el CHECKLIST (`docs/projects/active/game-creation-web-v1/CHECKLIST.md`): quiz/know-me como plantillas (esperan paso 2 del backend), codigos estables en diagnosticos y log de build, libreria de sonidos/iconos built-in (V). **[DRIFT]** `CURRENT_STATE.md` no menciona `TemplatePicker`, plantillas, `brief`, diff ni "Escenarios con expectativas"; si estan en codigo y en el CHECKLIST.
-**No hay**: chat de IA integrado, editor visual, asistente propio, capturas automaticas (declarado fuera de alcance en `PROJECT.md`).
+Other creation/account screens: `CreateGameRoute` (name + `TemplatePicker` with featured templates/categories/search/inspection; if the catalog is empty only the starter project is offered), `MyGamesRoute`, `ConnectAiRoute` (OAuth/MCP consent), `AiConnectionsRoute`.
+A published game without an open edition opens in `publish` and the draft sections explain how to open an edition (`PublishedNotice`).
+Pending in the CHECKLIST (`docs/projects/active/game-creation-web-v1/CHECKLIST.md`): quiz/know-me as templates (waiting for backend step 2), stable codes in diagnostics and build log, built-in sound/icon library (V). **[DRIFT]** `CURRENT_STATE.md` does not mention `TemplatePicker`, templates, `brief`, diff or "Scenarios with expectations"; they are in code and in the CHECKLIST.
+**There is no**: integrated AI chat, visual editor, own assistant, automatic captures (declared out of scope in `PROJECT.md`).
 
 ---
 
-## 8. Documentacion y artefactos de proceso
+## 8. Documentation and process artifacts
 
-### 8.1 Arbol de `docs/`
+### 8.1 `docs/` tree
 ```
 docs/Playhoot_Frontend_Architecture_Plan.docx          (plan de arquitectura; §N)
 docs/ai/{README,OPERATING_MODEL,KNOWLEDGE_MAP,CHANGELOG}.md
@@ -301,67 +301,67 @@ docs/projects/completed/identity-web-v1/{PROJECT.md,internal/AI_CONTEXT.md,works
 docs/projects/completed/session-play-v1/{PROJECT.md,CHECKLIST.md,internal/AI_CONTEXT.md}
 docs/work/{README.md,active/README.md,completed/README.md,templates/WORK_SPEC.template.md}
 ```
-(`docs/` raiz del repo padre `repos/docs` es otra cosa: planes 04/06/07/08 del producto, citados por `PROJECT.md` como `../docs/...`.)
+(The root `docs/` of the parent repo `repos/docs` is something else: product plans 04/06/07/08, cited by `PROJECT.md` as `../docs/...`.)
 
-### 8.2 Que contiene cada documento
-- `AGENTS.md` (+ `CLAUDE.md` = `@AGENTS.md`): bootstrap de agentes: determinar superficie de ejecucion (Conversational AI / Codebase Agent / Independent Reviewer), leer `docs/ai/OPERATING_MODEL.md`, enrutar contexto con `docs/ai/KNOWLEDGE_MAP.md` (no escanear todo el Markdown), usar `CONVERSATIONAL_ORCHESTRATOR.md` para peticiones naturales, procesos/protocolos en `docs/ai/`, verificar contra codigo y reportar contradicciones como **drift**, no tratar ideas/TODOs como decisiones, escalar decisiones materiales. Secciones: dos repos (el backend es la autoridad de negocio y contratos), estado del proyecto, estandares, Logic Mirror, **Assets** ("construir como si todo asset existiera": registrar en `assets.json`, usar por id, placeholder, documentar en `ASSETS.md`), Comandos (`npm run check` antes de reportar hecho), `HUMAN_REVIEW.md`/`AI_CONTEXT.md` temporales.
-- `ARCHITECTURE.md` (CANONICAL): 15 invariantes (§20): backend autoridad; Host confiable / juego no confiable; mismo artefacto web y movil; el juego nunca recibe tokens ni el WS; puente versionado y validado; plataforma responsive con juego en viewport de aspecto fijo (letterbox); **presentacion adaptativa con variantes separadas elegidas en el borde, no condicionales dispersos**; estado de presentacion / de feature / global son distintos; Feature State conoce operaciones semanticas, no transportes; URL determina navegacion y la feature se reconstruye de URL + backend; salir de una ruta descarta estado; device awareness solo en presentacion/adaptadores; visibilidad frontend no reemplaza autorizacion; meta inicial = slice Join+Play. Layout de repo, reglas de colocacion (feature package = estado/puertos; presentacion en cada app), capas por feature, navegacion (tabla de URLs, `/` solo redirige), GameHost/bridge, errores/observabilidad, "Deliberadamente abierto".
-- `CURRENT_STATE.md`: tabla "Area | Estado | Notas" de lo implementado + "Placeholders dejados" + "Identity Phase 2 (planned)". **[DRIFT]** cabecera dice `Last updated: 2026-10-20` pero contiene entradas hasta 2026-11-03; dice "261 tests en 32 archivos" (hay 53 archivos / 494 tests); no recoge plantillas/brief/escenarios con expectativas ni los cambios no commiteados; el boton de Google se describe "disabled for now" en `docs/logic/README.md` pero el codigo lo habilita si el backend lo ofrece.
-- `README.md` (raiz): descripcion corta, comandos, enlaces.
-- `docs/architecture/BACKEND_CONTRACT.md`: instantanea de referencia del contrato HTTP/WS que el backend implementa (gaps G1-G9, endpoints, WS, limites). "El codigo del backend gana."
-- `docs/logic/` (**Logic Mirror**): documentacion pensada para el humano que no lee TypeScript. `FLOWS.md` (18 flujos paso a paso con tablas de estado y de llamadas externas) y `mirror/*.go` (**pseudocodigo con sintaxis Go que no compila**): `routes.go` (cada URL -> vista), `view_*.go` (una por pantalla, con eventos y comentarios `// -> X`, `// code: ruta#simbolo`), `state_*.go` (que hace cada evento con el estado), `external.go` (cada llamada al backend como funcion pelada: `// endpoint: ...`, `// answer: ...`, `// code: packages/communication/...`). Se recorre como traza de llamadas desde `routes.go`. Regla: **cualquier cambio en una llamada externa, forma de estado, transicion, evento de pantalla o navegacion actualiza esa carpeta en el mismo cambio**; cada control nuevo suma una fila en "Where is each button?"; si el mirror discrepa del codigo es un bug (el codigo manda). `external.go` esta modificado sin commit (3 lineas, assets width/height/duration).
-- `docs/projects/**`: un Project agrupa WORK; `PROJECT.md` (dashboard), `CHECKLIST.md` opcional, `works/WORK-NNNN-*.md`, `internal/AI_CONTEXT.md` (contexto reanudable, no canonico). Activo: `game-creation-web-v1` (checklist con 35 items hechos y 3 abiertos). Completados: `session-play-v1` (slice join+play, 2026-11-01), `identity-web-v1` (6 WORK: credencial, invitado real, login local, Google, cierre, niveles de autenticacion). `PROJECT.md` de game-creation declara **realineacion 2026-11-05**: el flujo debe cumplir `../docs/08_Playhoot_Checklist_Flujo_de_Creacion.md`, que gana sobre el plan y decisiones previas.
-- `docs/work/**`: ciclo de vida de WORK (spec -> READY -> IMPLEMENTING -> review -> cierre); sin WORK standalone activos. `docs/decisions/**`: ADR-0001..0009 todos ACCEPTED (siguiente ADR-0010). `docs/engineering/**`: Radar NO autoritativo y 2 estandares aceptados (valores del backend; texto de cara al usuario/idiomas). `docs/design/**`: sistema de diseno y registro de assets.
+### 8.2 What each document contains
+- `AGENTS.md` (+ `CLAUDE.md` = `@AGENTS.md`): agent bootstrap: determine the execution surface (Conversational AI / Codebase Agent / Independent Reviewer), read `docs/ai/OPERATING_MODEL.md`, route context with `docs/ai/KNOWLEDGE_MAP.md` (do not scan all the Markdown), use `CONVERSATIONAL_ORCHESTRATOR.md` for natural requests, processes/protocols in `docs/ai/`, verify against code and report contradictions as **drift**, do not treat ideas/TODOs as decisions, escalate material decisions. Sections: two repos (the backend is the authority for business and contracts), project state, standards, Logic Mirror, **Assets** ("build as if every asset existed": register in `assets.json`, use by id, placeholder, document in `ASSETS.md`), Commands (`npm run check` before reporting done), temporary `HUMAN_REVIEW.md`/`AI_CONTEXT.md`.
+- `ARCHITECTURE.md` (CANONICAL): 15 invariants (§20): backend authority; trusted Host / untrusted game; same web and mobile artifact; the game never receives tokens or the WS; versioned and validated bridge; responsive platform with game in a fixed-aspect viewport (letterbox); **adaptive presentation with separate variants chosen at the edge, not scattered conditionals**; presentation / feature / global state are distinct; Feature State knows semantic operations, not transports; URL determines navigation and the feature is rebuilt from URL + backend; leaving a route discards state; device awareness only in presentation/adapters; frontend visibility does not replace authorization; initial goal = Join+Play slice. Repo layout, placement rules (feature package = state/ports; presentation in each app), layers per feature, navigation (URL table, `/` only redirects), GameHost/bridge, errors/observability, "Deliberately open".
+- `CURRENT_STATE.md`: table "Area | State | Notes" of what is implemented + "Placeholders left" + "Identity Phase 2 (planned)". **[DRIFT]** header says `Last updated: 2026-10-20` but contains entries up to 2026-11-03; says "261 tests in 32 files" (there are 53 files / 494 tests); does not cover templates/brief/scenarios with expectations or the uncommitted changes; the Google button is described as "disabled for now" in `docs/logic/README.md` but the code enables it if the backend offers it.
+- `README.md` (root): short description, commands, links.
+- `docs/architecture/BACKEND_CONTRACT.md`: reference snapshot of the HTTP/WS contract that the backend implements (gaps G1-G9, endpoints, WS, limits). "The backend code wins."
+- `docs/logic/` (**Logic Mirror**): documentation designed for the human who does not read TypeScript. `FLOWS.md` (18 step-by-step flows with state and external-call tables) and `mirror/*.go` (**pseudocode with Go syntax that does not compile**): `routes.go` (each URL -> view), `view_*.go` (one per screen, with events and `// -> X` comments, `// code: route#symbol`), `state_*.go` (what each event does to the state), `external.go` (each backend call as a bare function: `// endpoint: ...`, `// answer: ...`, `// code: packages/communication/...`). It is walked as a call trace from `routes.go`. Rule: **any change to an external call, state shape, transition, screen event or navigation updates that folder in the same change**; each new control adds a row in "Where is each button?"; if the mirror disagrees with the code it is a bug (the code rules). `external.go` is modified uncommitted (3 lines, assets width/height/duration).
+- `docs/projects/**`: a Project groups WORK; `PROJECT.md` (dashboard), optional `CHECKLIST.md`, `works/WORK-NNNN-*.md`, `internal/AI_CONTEXT.md` (resumable context, not canonical). Active: `game-creation-web-v1` (checklist with 35 items done and 3 open). Completed: `session-play-v1` (join+play slice, 2026-11-01), `identity-web-v1` (6 WORK: credential, real guest, local login, Google, close, authentication levels). The game-creation `PROJECT.md` declares a **realignment 2026-11-05**: the flow must comply with `../docs/08_Playhoot_Checklist_Flujo_de_Creacion.md`, which wins over the plan and previous decisions.
+- `docs/work/**`: WORK lifecycle (spec -> READY -> IMPLEMENTING -> review -> close); no active standalone WORK. `docs/decisions/**`: ADR-0001..0009 all ACCEPTED (next ADR-0010). `docs/engineering/**`: NON-authoritative Radar and 2 accepted standards (backend values; user-facing text/languages). `docs/design/**`: design system and asset registry.
 
-### 8.3 Reglas que hoy se le dicen a un agente que trabaja aqui (resumen)
-1. Leer AGENTS.md -> OPERATING_MODEL -> KNOWLEDGE_MAP; cargar solo el contexto relevante; usar el Orchestrator (buscar Project/WORK abierto antes de crear nada).
-2. Codigo y tests son autoridad de lo implementado; contradicciones docs/codigo = reportar como drift; no resolver en silencio.
-3. Humano decide; escalar decisiones materiales (producto, arquitectura, seguridad, contrato, dependencias, estandares); no inventar estandares desde patrones.
-4. Backend = autoridad de negocio y contratos; cambios de backend solo bajo direccion del humano y con el `AGENTS.md` del backend.
-5. Arquitectura: invariantes 1-15 de `ARCHITECTURE.md`; frontera de paquetes impuesta por lint; presentacion adaptativa por variantes en el borde.
-6. i18n: ningun texto literal en JSX/props (lint), catalogos es/en/pt-BR con paridad (test), frases ICU completas, feature state no produce texto, nunca mostrar `message` del backend.
-7. Valores del backend: nunca listas cerradas; default general; schema acepta strings donde la lista puede crecer.
-8. Estilos: solo tokens, ADR-0003; assets: registrar/usar por id/documentar; `npm run check` debe pasar.
-9. **Logic Mirror**: actualizar `docs/logic/**` en el mismo cambio que toque llamadas/estado/navegacion.
-10. Mantener `AI_CONTEXT.md` de proyectos activos al dia en checkpoints; no sobrescribir autoridad de diseno de workspaces/proyectos activos; `HUMAN_REVIEW.md` como superficie de revision.
-11. Correr `npm run check` antes de reportar trabajo como hecho.
-(La memoria del usuario indica ademas un flujo "chat primero; docs son memoria propia, nunca compuertas" que NO esta en este repo; es instruccion externa.)
+### 8.3 Rules currently given to an agent working here (summary)
+1. Read AGENTS.md -> OPERATING_MODEL -> KNOWLEDGE_MAP; load only the relevant context; use the Orchestrator (look for an open Project/WORK before creating anything).
+2. Code and tests are the authority on what is implemented; doc/code contradictions = report as drift; do not resolve silently.
+3. Human decides; escalate material decisions (product, architecture, security, contract, dependencies, standards); do not invent standards from patterns.
+4. Backend = authority on business and contracts; backend changes only under the human's direction and with the backend's `AGENTS.md`.
+5. Architecture: invariants 1-15 of `ARCHITECTURE.md`; package boundary enforced by lint; adaptive presentation by variants at the edge.
+6. i18n: no literal text in JSX/props (lint), es/en/pt-BR catalogs with parity (test), full ICU sentences, feature state does not produce text, never show the backend `message`.
+7. Backend values: never closed lists; general default; schema accepts strings where the list can grow.
+8. Styles: tokens only, ADR-0003; assets: register/use by id/document; `npm run check` must pass.
+9. **Logic Mirror**: update `docs/logic/**` in the same change that touches calls/state/navigation.
+10. Keep `AI_CONTEXT.md` of active projects up to date at checkpoints; do not overwrite design authority of active workspaces/projects; `HUMAN_REVIEW.md` as the review surface.
+11. Run `npm run check` before reporting work as done.
+(The user's memory additionally indicates a "chat first; docs are my own memory, never gates" workflow that is NOT in this repo; it is external instruction.)
 
 ---
 
-## 9. Cobertura de conceptos
+## 9. Concept coverage
 
-| Concepto | Estado | Detalle |
+| Concept | State | Detail |
 | --- | --- | --- |
-| Descubrimiento / busqueda de juegos | **ausente** (para jugadores) / parcial para creadores | No hay home, catalogo ni busqueda de juegos. Existe busqueda/filtro de **plantillas** al crear (`TemplatePicker`, `GET /v1/templates[/search]`). `/` solo redirige a `/join` |
-| Pagina de detalle de juego | **ausente** (lado jugador) / parcial | Solo la "Ficha y publicacion" del creador (`PublishSection`: nombre, descripcion, logo, fotos); no hay vista publica de una ficha |
-| Unirse por codigo/enlace | **existe** | `/join` (+`CodeInput`), `/join/:joinCode`, `/sessions/:uuid/play`; copiar enlace de invitacion en lobby |
-| Lobby | **existe** | `SessionScreen`/`HostRoute` (jugadores con presencia, limites min/max, invitacion, musica) |
-| Juego en sesion | **existe** | GameHost en iframe sandbox, reconexion, overlays, riel/barra, pista de rotacion |
-| Vista admin del host (cambiar perspectiva, expulsar) | **parcial** | Existe: iniciar, cancelar, jugar tambien, ver el juego de cualquier participante en solo lectura (`select_perspective`). **No existe expulsar/kick** (grep sin resultados) |
-| Historial de sesiones + replay | **ausente** | Sin pantallas ni clientes; replay fuera del proyecto (paso 12 del plan) |
-| Perfil | **ausente** | Solo `DisplayNameScreen` (fijar nombre inicial); "Identity Phase 2" (pantalla de cuenta, cambiar nombre, sesiones activas) planificada, no construida |
-| Cuenta invitado + upgrade | **existe** | `/sign-in/guest` (`POST /v1/guests`); upgrade: `login/start` con Bearer de invitado + `login/complete` con `replaces_refresh_token` (el invitado pasa a ser la cuenta, misma identidad) |
-| Login / registro (Google) | **existe** (Google "construido", sin verificar contra Google real) | `/sign-in` con Google (si lo ofrece el backend) y proveedor local fictitio en dev; PKCE S256; `CURRENT_STATE` dice que la verificacion real esta diferida |
-| Mis juegos | **existe** | `/games` (lista: nombre, publicado, visibilidad, edicion) |
-| Creacion de juegos: enlace de IA externa | **existe** | `share` (enlace `ai-link`), `ai` (pegar cambios), MCP: consentimiento `/connect-ai` y `/account/ai-connections` |
-| Creacion de juegos: chat de IA integrado | **ausente** | Fuera de alcance declarado ("Playhoot's own AI agent") |
-| Gestion de versiones | **parcial** | Revisiones del borrador (listar, diff, restaurar), publicar revision, "nueva version" (`openEdition`); no hay UI de multiples versiones publicadas/rollback entre versiones publicadas [inferido: no hay endpoint para ello] |
-| Reportes / casos | **ausente** | Solo reportes automaticos `game_fault` (WS) y telemetria; sin UI de reportar |
-| Notificaciones (campana/bandeja) | **ausente** | Sin codigo |
-| Planes / suscripcion / compras | **ausente** | Sin codigo ni operaciones |
-| Modo profesor (clases, alumnos, materiales, actividades, notas) | **ausente** | Sin codigo; `PROJECT.md` lo declara "teacher product layer" fuera de alcance |
-| Modo estudiante | **ausente** | Sin codigo |
-| Dashboard admin | **ausente** | Sin codigo (`/design` y `/dev/*` son solo desarrollo) |
-| PWA (manifest/service worker) | **parcial** | `public/site.webmanifest` (standalone, colores, 3 iconos referenciados) y `<link rel=manifest>`; **los iconos PNG no existen** (MISSING en ASSETS.md); **no hay service worker** (grep `serviceWorker` sin resultados); Cache Storage solo para artefactos y assets de juegos |
-| SEO (SSR/prerender/meta) | **ausente / minimo** | SPA pura de Vite; solo metas estaticas en `apps/web/index.html` (description, theme-color, og:*, twitter:card); `og-share.png` no existe; sin SSR, prerender ni meta por ruta (`<title>` fijo "Playhoot"). `<html lang>` si se sincroniza con el idioma |
-| App movil | **ausente** (preparada a medias) | `apps/mobile/README.md` solamente; el SDK ya elige transporte de WebView de React Native y `ARCHITECTURE.md` la describe (React Native + Expo + `NativeGameHost`), sin codigo |
+| Game discovery / search | **absent** (for players) / partial for creators | There is no home, catalog or game search. There is **template** search/filter when creating (`TemplatePicker`, `GET /v1/templates[/search]`). `/` only redirects to `/join` |
+| Game detail page | **absent** (player side) / partial | Only the creator's "Card and publishing" (`PublishSection`: name, description, logo, photos); there is no public view of a card |
+| Join by code/link | **exists** | `/join` (+`CodeInput`), `/join/:joinCode`, `/sessions/:uuid/play`; copy invitation link in the lobby |
+| Lobby | **exists** | `SessionScreen`/`HostRoute` (players with presence, min/max limits, invitation, music) |
+| In-session game | **exists** | GameHost in sandbox iframe, reconnection, overlays, rail/bar, rotation hint |
+| Host admin view (change perspective, kick) | **partial** | Exists: start, cancel, also play, watch any participant's game read-only (`select_perspective`). **No kick exists** (grep with no results) |
+| Session history + replay | **absent** | No screens or clients; replay outside the project (plan step 12) |
+| Profile | **absent** | Only `DisplayNameScreen` (set initial name); "Identity Phase 2" (account screen, change name, active sessions) planned, not built |
+| Guest account + upgrade | **exists** | `/sign-in/guest` (`POST /v1/guests`); upgrade: `login/start` with guest Bearer + `login/complete` with `replaces_refresh_token` (the guest becomes the account, same identity) |
+| Login / sign-up (Google) | **exists** (Google "built", not verified against real Google) | `/sign-in` with Google (if the backend offers it) and fake local provider in dev; PKCE S256; `CURRENT_STATE` says real verification is deferred |
+| My games | **exists** | `/games` (list: name, published, visibility, edition) |
+| Game creation: external AI link | **exists** | `share` (`ai-link` link), `ai` (paste changes), MCP: consent `/connect-ai` and `/account/ai-connections` |
+| Game creation: integrated AI chat | **absent** | Declared out of scope ("Playhoot's own AI agent") |
+| Version management | **partial** | Draft revisions (list, diff, restore), publish revision, "new version" (`openEdition`); there is no UI for multiple published versions/rollback between published versions [inferred: there is no endpoint for it] |
+| Reports / cases | **absent** | Only automatic `game_fault` reports (WS) and telemetry; no report UI |
+| Notifications (bell/inbox) | **absent** | No code |
+| Plans / subscription / purchases | **absent** | No code or operations |
+| Teacher mode (classes, students, materials, activities, grades) | **absent** | No code; `PROJECT.md` declares it a "teacher product layer" out of scope |
+| Student mode | **absent** | No code |
+| Admin dashboard | **absent** | No code (`/design` and `/dev/*` are development only) |
+| PWA (manifest/service worker) | **partial** | `public/site.webmanifest` (standalone, colors, 3 referenced icons) and `<link rel=manifest>`; **the PNG icons do not exist** (MISSING in ASSETS.md); **there is no service worker** (grep `serviceWorker` with no results); Cache Storage only for game artifacts and assets |
+| SEO (SSR/prerender/meta) | **absent / minimal** | Pure Vite SPA; only static metas in `apps/web/index.html` (description, theme-color, og:*, twitter:card); `og-share.png` does not exist; no SSR, prerender or per-route meta (fixed `<title>` "Playhoot"). `<html lang>` is synced with the language |
+| Mobile app | **absent** (half-prepared) | `apps/mobile/README.md` only; the SDK already chooses the React Native WebView transport and `ARCHITECTURE.md` describes it (React Native + Expo + `NativeGameHost`), with no code |
 
 ---
 
 ## 10. Health check
 
-### 10.1 `git status --short` (11 archivos modificados, 0 sin seguimiento)
+### 10.1 `git status --short` (11 modified files, 0 untracked)
 ```
  M apps/web/public/docs/sdk/v1/assets.md
  M apps/web/src/features/game-authoring/sections/AssetsSection.tsx
@@ -373,26 +373,26 @@ docs/work/{README.md,active/README.md,completed/README.md,templates/WORK_SPEC.te
  M packages/communication/src/gamesClient.ts
  M packages/protocol/src/http/games.ts
 ```
-Caracterizacion del trabajo en curso (5 lineas):
-1. Un solo cambio coherente (+57/-3 lineas, `git diff --stat`): "S2. Medidas de assets y subidas por agente" (backend S, 2026-11-07).
-2. Protocolo/cliente: `DraftAsset` gana `width`, `height`, `durationMs` (`duration_ms`) nulables (`packages/protocol/src/http/games.ts`, `gamesClient.ts` + test).
-3. UI: `AssetsSection.tsx` muestra "W x H px" o segundos junto al estado del asset; 2 claves i18n nuevas en es/en/pt-BR.
-4. Guia SDK `assets.md`: un agente no pasa archivos por su contexto; pide una URL de subida de un solo uso (`request_asset_upload` MCP o `POST <link>/assets/<key>/upload-url`) y hace PUT; `upload_asset` base64 solo hasta 256 KiB.
-5. Docs sincronizadas en el mismo cambio: `BACKEND_CONTRACT.md`, `docs/logic/mirror/external.go` y item S2 del CHECKLIST (consistente con la regla del Logic Mirror).
+Characterization of the work in progress (5 lines):
+1. A single coherent change (+57/-3 lines, `git diff --stat`): "S2. Asset measurements and agent uploads" (backend S, 2026-11-07).
+2. Protocol/client: `DraftAsset` gains nullable `width`, `height`, `durationMs` (`duration_ms`) (`packages/protocol/src/http/games.ts`, `gamesClient.ts` + test).
+3. UI: `AssetsSection.tsx` shows "W x H px" or seconds next to the asset state; 2 new i18n keys in es/en/pt-BR.
+4. SDK guide `assets.md`: an agent does not pass files through its context; it requests a single-use upload URL (`request_asset_upload` MCP or `POST <link>/assets/<key>/upload-url`) and does a PUT; `upload_asset` base64 only up to 256 KiB.
+5. Docs synced in the same change: `BACKEND_CONTRACT.md`, `docs/logic/mirror/external.go` and CHECKLIST item S2 (consistent with the Logic Mirror rule).
 
-### 10.2 Verificaciones ejecutadas (sin servidores dev)
-| Comando | Resultado |
+### 10.2 Checks run (no dev servers)
+| Command | Result |
 | --- | --- |
-| `npm run typecheck` (todos los workspaces) | **PASA** (exit 0, sin errores) |
-| `npm run lint` (`eslint .`) | **PASA** (exit 0, sin avisos) |
-| `npx vitest run` (no requiere backend) | **PASA**: 53 archivos, 494 tests, 32 s |
-| `format:check`, `assets`, `build` | no ejecutados (fuera de lo pedido) |
+| `npm run typecheck` (all workspaces) | **PASS** (exit 0, no errors) |
+| `npm run lint` (`eslint .`) | **PASS** (exit 0, no warnings) |
+| `npx vitest run` (does not require backend) | **PASS**: 53 files, 494 tests, 32 s |
+| `format:check`, `assets`, `build` | not run (outside what was asked) |
 
-**[DRIFT]** `CURRENT_STATE.md` afirma 32 archivos / 261 tests; la realidad es 53 / 494.
+**[DRIFT]** `CURRENT_STATE.md` claims 32 files / 261 tests; the reality is 53 / 494.
 
 ---
 
-## Notas finales de verificacion
-- Contrastado contra codigo: rutas (`router.tsx`), clientes HTTP/WS (`communication`, `protocol`), capas (archivos citados), contenedor iframe, tokens CSS, ausencia de conceptos (grep de kick/replay/notification/teacher/student/grade/serviceWorker/prerender sin resultados en codigo de `apps` y `packages`).
-- No ejecutado: arranque de dev server, e2e contra backend, navegador. El conteo de endpoints (44) sale de contar funciones de `gamesClient` (29), `identityClient` (8), `aiAccessClient` (5), `sessionsClient` (1), `telemetryReporter` (1).
-- [inferido]: nivel de cuenta requerido por `/connect-ai` y `/account/ai-connections` (sin `RequireOperation` en esas rutas); que no haya endpoint de versiones publicadas multiples (no aparece en `protocol`).
+## Final verification notes
+- Checked against code: routes (`router.tsx`), HTTP/WS clients (`communication`, `protocol`), layers (cited files), iframe container, CSS tokens, absence of concepts (grep of kick/replay/notification/teacher/student/grade/serviceWorker/prerender with no results in `apps` and `packages` code).
+- Not run: dev server startup, e2e against backend, browser. The endpoint count (44) comes from counting functions of `gamesClient` (29), `identityClient` (8), `aiAccessClient` (5), `sessionsClient` (1), `telemetryReporter` (1).
+- [inferred]: account level required by `/connect-ai` and `/account/ai-connections` (no `RequireOperation` on those routes); that there is no endpoint for multiple published versions (it does not appear in `protocol`).
