@@ -14,16 +14,20 @@ const MANIFESTS = [
   ['frontend', 'playhoot_frontend/docs/system/manifest.js'],
 ];
 
-const TYPES = ['domain', 'table', 'operation', 'flow', 'endpoint', 'screen'];
+const TYPES = ['domain', 'package', 'table', 'operation', 'flow', 'endpoint', 'screen'];
 const STATUS = ['planned', 'implemented', 'verified'];
 const REQUIRED = {
   domain: ['id', 'name', 'summary', 'status', 'kind'],
+  package: ['id', 'name', 'summary', 'status', 'provides'],
   table: ['id', 'name', 'summary', 'status', 'domain', 'columns', 'history'],
   operation: ['id', 'name', 'summary', 'status', 'domain', 'kind', 'effect'],
   flow: ['id', 'name', 'summary', 'status', 'coordinator', 'effect', 'steps', 'persistence'],
   endpoint: ['id', 'name', 'summary', 'status', 'transport', 'access', 'invokes'],
   screen: ['id', 'name', 'summary', 'status', 'path', 'mode', 'access', 'variants'],
 };
+// A planned flow from the catalog may declare the domains it touches instead of steps;
+// its milestone design replaces "touches" with real steps and persistence.
+const PLANNED_FLOW_REQUIRED = ['id', 'name', 'summary', 'status', 'coordinator', 'effect', 'touches'];
 const ENUMS = {
   domain: { kind: ['traditional', 'entry', 'orchestrator', 'composer', 'process'] },
   operation: { kind: ['usecase', 'workflow'], effect: ['read', 'write'] },
@@ -97,9 +101,12 @@ const has = (t, id) => entities[t].has(id);
 const arr = (x) => (Array.isArray(x) ? x : []);
 const top = (d) => String(d ?? '').split('.')[0];
 
+const isCatalogFlow = (e) => e.status === 'planned' && arr(e.touches).length > 0;
+
 for (const t of TYPES) {
   for (const [id, { e, file }] of entities[t]) {
-    for (const f of REQUIRED[t]) {
+    const required = t === 'flow' && isCatalogFlow(e) ? PLANNED_FLOW_REQUIRED : REQUIRED[t];
+    for (const f of required) {
       const v = e[f];
       if (v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0))
         err(file, t, id, `missing required field "${f}"`);
@@ -145,7 +152,10 @@ for (const t of TYPES) {
     }
 
     if (t === 'flow') {
-      if (!arr(e.steps).length) err(file, t, id, 'flow without steps');
+      if (!arr(e.steps).length && !isCatalogFlow(e)) err(file, t, id, 'flow without steps');
+      for (const d of arr(e.touches)) {
+        if (!has('domain', d)) err(file, t, id, `touches domain "${d}" which does not exist`);
+      }
       for (const s of arr(e.steps)) {
         if (!has('operation', s.operation)) err(file, t, id, `step ${s.n}: operation "${s.operation}" does not exist`);
         if (!has('domain', s.domain)) err(file, t, id, `step ${s.n}: domain "${s.domain}" does not exist`);

@@ -24,13 +24,15 @@ The creator does not read code. They want to understand the **software architect
 
 Every entity has a unique `id`, a `name`, a `summary` (one sentence) and a `status`: `planned` | `implemented` | `verified`. Text in English; code identifiers as they are.
 
-**domain** — `id` (`play`, `play.session`), `parent` (id or `null`), `kind` (`traditional` | `entry` | `orchestrator` | `composer` | `process`), `responsibilities[]`, `doesNotKnow[]` (what it deliberately ignores), `sources[]` (e.g. `P15§2`).
+**domain** — `id` (`play`, `play.session`), `parent` (id or `null`), `kind` (`traditional` | `entry` | `orchestrator` | `composer` | `process`), `responsibilities[]`, `doesNotKnow[]` (what it deliberately ignores), `references[]` (which other domains' external identifiers it stores; coordination only via orchestrator/composer), `sources[]` (e.g. `P15§2`).
+
+**package** — a shared technical package domains may use; not a domain, no tables of its own documented. `id` (`txqueue`), `provides[]`, `doesNotKnow[]`, `sources[]`.
 
 **table** — `id` (`<domain>.<real_table_name>`), `domain`, `purpose`, `columns[{name, type, note}]`, `indexes[]`, `history` (how change is traced: change table, write-once columns, or `infrastructure` when exempt), `references[{column, to}]` where `to` is a logical entity of another domain (by external identifier) or a table of the same domain, `lifecycle` (optional, when the state machine lives in this table).
 
 **operation** — an operation a domain exposes. `id` (`<domain>.<verb>`), `domain`, `kind` (`usecase` | `workflow`), `effect` (`read` | `write`), `reads[]` and `writes[]` (table ids), `rules[]` (the main ones, in plain language), `limits[]` (`{what, value, source: plan|domain}`), `steps[]` (when it is an internal workflow), `lifecycle` (optional: `{states[], transitions[{from, to, on}]}`), `enqueues[]` (queue tasks it leaves), `callsSubdomains[]` (operation ids of child subdomains), `sources[]`.
 
-**flow** — an operation that crosses domains. `id`, `coordinator` (`orchestrator` | `composer`), `effect`, `steps[{n, domain, operation, when, onFailure}]`, `persistence` (`none` | `recorded-steps` | `queue`), `idempotency`, `compensation`, `lifecycle` (optional), `sources[]`.
+**flow** — an operation that crosses domains. `id`, `coordinator` (`orchestrator` | `composer`), `effect`, `steps[{n, domain, operation, when, onFailure}]`, `persistence` (`none` | `recorded-steps` | `queue`), `idempotency`, `compensation`, `lifecycle` (optional), `sources[]`. While a flow is `planned` and its milestone has not been designed, it may carry `touches[]` (domain ids) instead of `steps` and `persistence`; the milestone design replaces `touches` with real steps.
 
 **endpoint** — `id` (`METHOD:/path`, `WS:/path` or `MCP:tool`), `transport` (`http` | `ws` | `mcp`), `access` (`anonymous` | `guest` | `account` | `teacher` | `student` | `admin` | `external-ai` | `provider`), `invokes` (flow or operation id), `networkLimit`.
 
@@ -38,7 +40,7 @@ Every entity has a unique `id`, a `name`, a `summary` (one sentence) and a `stat
 
 ## 4. Views and entry points
 
-Fixed top bar: Home · Domains · Operations · Flows · Data · Endpoints · Screens · Lifecycles · search.
+Fixed top bar: Home · Domains · Operations · Flows · Data · Endpoints · Screens · Packages · Lifecycles · search.
 
 | View | Shows (collapsed by default) |
 |---|---|
@@ -49,6 +51,7 @@ Fixed top bar: Home · Domains · Operations · Flows · Data · Endpoints · Sc
 | Data | By domain: list of entities; expanding one shows columns and indexes. |
 | Endpoints | By area and transport; each links to what it invokes. |
 | Screens | The screen graph as a navigable list: screen → where it navigates → what it calls. |
+| Packages | Shared technical packages (queue, limits, storage, logs, metrics): what each provides. |
 | Lifecycles | Every state machine (from tables, operations and flows) in one index. |
 
 Interaction rules:
@@ -63,7 +66,7 @@ Interaction rules:
 
 `tools/validate-docs.mjs` (Node, no dependencies), run from the workspace root (an optional argument points it at another workspace root, used to test it on a broken copy):
 - unique ids; required fields; every reference resolves (`domain`, `reads`, `writes`, `invokes`, the `operation` of steps, `calls`, `navigatesTo`, `parent`).
-- a flow step's `domain` must be the domain of its `operation`.
+- a flow step's `domain` must be the domain of its `operation`; a `planned` flow without steps needs `touches[]` of existing domains.
 - a `flow` may only have `orchestrator` or `composer` as `coordinator`; an `operation` of a domain does not reference tables of another top-level domain (architecture rule).
 - output: errors with file and id; non-zero exit code when there are errors.
 

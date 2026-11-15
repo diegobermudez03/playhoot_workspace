@@ -3,8 +3,8 @@
   'use strict';
 
   // ---------- Registry ----------
-  var TYPES = ['domain', 'table', 'operation', 'flow', 'endpoint', 'screen'];
-  var LABEL = { domain: 'domain', table: 'table', operation: 'operation', flow: 'flow', endpoint: 'endpoint', screen: 'screen' };
+  var TYPES = ['domain', 'package', 'table', 'operation', 'flow', 'endpoint', 'screen'];
+  var LABEL = { domain: 'domain', package: 'package', table: 'table', operation: 'operation', flow: 'flow', endpoint: 'endpoint', screen: 'screen' };
   var db = {}; TYPES.forEach(function (t) { db[t] = {}; });
   var order = {}; TYPES.forEach(function (t) { order[t] = []; });
   var problems = [];
@@ -20,7 +20,7 @@
   }
 
   var PH = window.PH = {
-    domain: add('domain'), table: add('table'), operation: add('operation'),
+    domain: add('domain'), package: add('package'), table: add('table'), operation: add('operation'),
     flow: add('flow'), endpoint: add('endpoint'), screen: add('screen'),
     load: function (files) {
       var me = document.currentScript;
@@ -101,6 +101,7 @@
         link('flow', id, 'operation', s.operation, 'step ' + s.n);
         link('flow', id, 'domain', s.domain, 'touches');
       });
+      arr(f.touches).forEach(function (d) { link('flow', id, 'domain', d, 'touches'); });
     });
     order.endpoint.forEach(function (id) {
       var e = db.endpoint[id];
@@ -155,6 +156,7 @@
     if (type === 'domain') {
       texts('Responsibilities', arr(e.responsibilities));
       texts('Deliberately does not know', arr(e.doesNotKnow));
+      texts('References to other domains (external identifiers; coordination only via orchestrator/composer)', arr(e.references));
       list('Subdomains', all('domain').filter(function (d) { return d.parent === e.id; }), function (d) { return refRow('domain', d.id); });
       list('Operations it exposes', all('operation').filter(function (o) { return o.domain === e.id; }), function (o) { return refRow('operation', o.id); });
       if (e.kind === 'orchestrator' || e.kind === 'composer') list('Flows it coordinates', all('flow').filter(function (f) { return f.coordinator === e.kind; }), function (f) { return refRow('flow', f.id); });
@@ -195,8 +197,13 @@
       });
       var touched = [];
       arr(e.steps).forEach(function (st) { if (st.domain && touched.indexOf(st.domain) < 0) touched.push(st.domain); });
+      arr(e.touches).forEach(function (d) { if (touched.indexOf(d) < 0) touched.push(d); });
       if (touched.length) block('Domains it touches (' + touched.length + ')', function (c) { renderDomainTree(c, touched); });
       if (e.lifecycle) block('Lifecycle', function (c) { renderLifecycle(c, e.lifecycle); });
+    }
+    if (type === 'package') {
+      texts('Provides', arr(e.provides));
+      texts('Deliberately does not know', arr(e.doesNotKnow));
     }
     if (type === 'table') {
       if (e.domain) list('Domain', [e.domain], function (d) { return refRow('domain', d); });
@@ -338,6 +345,7 @@
     ['data', 'Data', 'Tables per domain, with columns and indexes.', 'table'],
     ['endpoints', 'Endpoints', 'Entry points from outside: HTTP, WebSocket and MCP.', 'endpoint'],
     ['screens', 'Screens', 'The screens, where they lead and what they call.', 'screen'],
+    ['packages', 'Shared packages', 'Technical packages any domain may use; they are not domains.', 'package'],
     ['lifecycles', 'Lifecycles', 'Every state machine in one index.', null]
   ];
 
@@ -430,13 +438,19 @@
     emptyNote(all('screen'));
   }
 
+  function viewPackages() {
+    heading('Shared packages', SECTIONS[6][2]);
+    all('package').forEach(function (p) { main.appendChild(refRow('package', p.id)); });
+    emptyNote(all('package'));
+  }
+
   function lifecycles() {
     var out = [];
     ['table', 'operation', 'flow'].forEach(function (t) { all(t).forEach(function (e) { if (e.lifecycle) out.push({ type: t, e: e }); }); });
     return out;
   }
   function viewLifecycles() {
-    heading('Lifecycles', SECTIONS[6][2]);
+    heading('Lifecycles', SECTIONS[7][2]);
     var lcs = lifecycles();
     lcs.forEach(function (l) {
       main.appendChild(section({ title: display(l.type, l.e) + ' — ' + arr(l.e.lifecycle.states).length + ' states', render: function (c) {
@@ -462,8 +476,8 @@
   }
 
   // ---------- Router ----------
-  var VIEWS = { '': viewHome, domains: viewDomains, operations: viewOperations, flows: viewFlows, data: viewData, endpoints: viewEndpoints, screens: viewScreens, lifecycles: viewLifecycles };
-  var TAB_OF = { domain: 'domains', operation: 'operations', flow: 'flows', table: 'data', endpoint: 'endpoints', screen: 'screens', search: '' };
+  var VIEWS = { '': viewHome, domains: viewDomains, operations: viewOperations, flows: viewFlows, data: viewData, endpoints: viewEndpoints, screens: viewScreens, packages: viewPackages, lifecycles: viewLifecycles };
+  var TAB_OF = { domain: 'domains', operation: 'operations', flow: 'flows', table: 'data', endpoint: 'endpoints', screen: 'screens', package: 'packages', search: '' };
   function route() {
     main = document.getElementById('main');
     main.textContent = '';

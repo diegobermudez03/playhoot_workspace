@@ -19,8 +19,8 @@ Objective: all flows and rules of `docs/definitivos/` executable locally with si
 | H1 | Backend foundations | Transactional queue + DLQ; limits convention; minimal `budget` (cost measurement and admission, restriction states); minimal `plan` (configurable free limits); `notifications` (in-app + simulated email with Resend/SES modes); `compliance` core (market matrix, declarations, acceptances); `analytics` (queue ingestion); administrator with second factor and action log | B: principles, P12, P29–P32, P34, P35 | H0 | 10–12 |
 | H2 | Frontend base and visual identity | Rendering for SEO and PWA; **visual direction (C-03)**; design system; structure with fixed bar, mode switch and language; contextual authentication; admin web base; AA accessibility as a criterion | B: frontend/UI, P01§5, P14 | H0 (can alternate with H1) | 8–10 |
 | H3 | Identity and access | Email code; age and country; guests at 90 days; link methods; profile; modes; account deletion; public entry | P03, P19, P35, P14§1 · C-01 (answered) | H1, H2 | 7–9 |
-| H4 | Games, versions, publication and Discovery | Split `play/versions`; four version conditions; publication review; unpublish/delete; templates with permission and provenance; categories and tags; Discovery, search and card; my games; quotas | P04, P05, P14§2, P15 | H1–H3 | 10–12 |
-| H5 | Sessions, history and replays | Host, admissions, 60 s, kick, single control, warnings, recovery, repeat; reservation and consumption of uses; history; player; permissions; retention; identity substitution | P06, P02§9-10, P13§5 | H4 | 10–12 |
+| H4 | Games, versions, publication and Discovery | Split `play/versions`; four version conditions; publication review (creates `moderation`'s review core; H9 completes the domain); unpublish/delete; templates with permission and provenance; categories and tags; Discovery, search and card; my games; quotas | P04, P05, P14§2, P15 | H1–H3 | 10–12 |
+| H5 | Sessions, history and replays | Host, admissions, 60 s, kick, single control, warnings, recovery, repeat; reservation and consumption of uses; results-per-participant contract in `play`; history; `play.replay` (player, permissions, retention, identity substitution) | P06, P02§9-10, P08§2, P13§5 | H4 | 10–12 |
 | H6 | Plans, charges, credits and cost control | Administrable catalog; subscriptions and purchases with simulated provider; prorations, cancellation, recovery, refunds, disputes, discount, protected price; Teacher trial; credits; reservations and funds; caps, restriction, pause and emergency shutdown | P11, P12, P23, P26–P28, P30, P32 | H1, H3 | 14–18 |
 | H7 | AI creation, SDK and library | `creation` domain; external AI per P10 (query vs. modification by draft, reconciled MCP, manual flow by links); captures and presentation; asset library and its administration; continuous 2D SDK; integrated AI with simulated providers (jobs, cap, credits, web research); chat | P09, P10, P24, P25, P36, P37 | H4, H6 | 18–24 |
 | H8 | Teacher: classes, activities and grades | Classes, students and credentials; existing and new authorizations; processing agreement; materials; context; teacher library; activities; class sessions; grades, final grade and export; teacher and student modes; family groups | P02, P03, P07, P08, P20–P22 · C-02 (answered) | H5, H6, H7 | 16–20 |
@@ -32,6 +32,8 @@ Objective: all flows and rules of `docs/definitivos/` executable locally with si
 
 After: creator's test → iteration → **delivery 2** (real integrations, with the creator) → production conditions (`CREATOR_TODO.md`).
 
+T-002 reviewed this order against the closed domain tree (D-001): it stands. Two notes landed in the table above: H4 gives birth to `moderation` (review core only) and H5 owns the results contract and `play.replay`. Domain ↔ milestone map: H1 `budget`+`plan` (minimal), `notifications`, `compliance` (core), `analytics` (ingestion); H4 `play.versions`, `moderation` (review); H5 `play.replay`; H6 `billing`, `plan` and `budget` complete; H7 `creation`, `library`; H8 `classroom`, `compliance` (authorizations, guardian page); H9 `support`, `moderation` complete; H11 `compliance` (privacy requests).
+
 ## Board
 
 States: `pending` · `in progress` · `done` · `blocked`. Size: S, M, L. Tier: see `METHOD.md` §4.
@@ -42,7 +44,7 @@ States: `pending` · `in progress` · `done` · `blocked`. Size: S, M, L. Tier: 
 |---|---|---|---|---|
 | T-000 | Full reading, specification map, inventory, gaps, method, plan, repos ready | A | L | done |
 | T-001 | System documentation site: structure, views, validator and seed data | B | M | done |
-| T-002 | Target architecture: close D-001 and load domains, responsibilities, dependencies and flow catalog in `planned` | A | L | pending |
+| T-002 | Target architecture: close D-001 and load domains, responsibilities, dependencies and flow catalog in `planned` | A | L | done 2026-11-15 |
 | T-003 | Cleanup of both repos: remove old documentation process, versioned binary, empty folders | C | M | done 2026-11-15 |
 | T-004 | Load the existing backend into the documentation as `implemented` | C | L | pending |
 | T-005 | Load the existing frontend into the documentation as `implemented` | C | M | pending |

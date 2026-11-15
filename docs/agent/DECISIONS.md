@@ -12,17 +12,28 @@ Three lists: **C** product questions (the creator decides), **D** technical deci
 
 ## D — Technical decisions
 
-**D-001 · Target domain tree (initial proposal; closed in T-002).**
+**D-001 · Target domain tree (closed by T-002, 2026-11-15).**
+The definitive phase 1 tree, loaded into the documentation site (every domain page lists responsibilities, what it ignores, references and sources; the flow catalog maps every cross-domain operation). 17 top-level domains: `api`, `orchestrator`, `composer` (coordination) and 14 traditional ones.
+
 Kept from the base document: `api`, `orchestrator`, `composer`, `identity`, `game`, `play`, `notifications`, `classroom`, `plan`. Changes, allowed by P15§6:
-- `play` splits into `versions` (drafts, sources, builds, version assets, previews), `session` (session lifecycle, participants, results, history), `runtime` (live execution) and `replay` (recording, playback, retention, identity substitution). Today `versions` lives inside `play/session`.
-- `creation` becomes a top-level domain: brief, conversations, AI jobs and their metering, external-AI access per draft, validation results. Reason: it has its own data and rules (P15§1) and is currently spread across orchestrator, composer, api and identity.
-- `library` (new): the platform's asset library (records, versions, states, licenses, variants).
-- `billing` and `budget` (new) next to `plan`: the three responsibilities of P15§4 as three domains (charging through the provider · entitlements and balances · spend, reserves, admission and shutdown). `budget` is cross-cutting: every operation with a cost asks it for admission.
-- `compliance` (new): market-and-function matrix, age and residence declarations, versioned acceptances, coverage of minors' authorizations and the guardian page, privacy requests, provider registry. Reason: these are legal rules and evidence with their own retention; `identity` stays focused on authentication and access.
-- `support` (the base document's `report`): reports, cases, conversations, public form, inbound email. `moderation`: publication review, graduated measures, automatic classification, system actions, appeals.
-- `analytics`: receives events through queues from the domains; owns its analysis tables.
-- The existing `discovery` stub is removed: catalog and search belong to `game`.
-- Shared packages that are not domains: transactional queue with dead-letter handling, windowed limits, object storage, logging, metrics.
+- `play` splits into `versions` (drafts, builds, version assets, previews, frozen versions), `session` (session lifecycle, participants, original results, history), `runtime` (live execution; the sandbox stays a separate process under it) and `replay` (recording, playback, retention, identity substitution). Today `versions` lives inside `play/session` and recording inside `runtime`.
+- `creation` becomes a top-level domain: brief, conversations, AI jobs and their metering, external-AI access per draft, validation results. Reason: it has its own data and rules (P15§1 requires at least a separate workflow) and is currently spread across orchestrator, composer, api and identity.
+- `library` (new): the platform's asset library (records, versions, states, licenses, variants). Reason: P25 gives it its own lifecycle, admin and provenance rules, used by creation and admin alike.
+- `billing` and `budget` (new) next to `plan`: the three responsibilities of P15§4 as three domains (charging through the provider · entitlements and balances · spend, reserves, admission and shutdown). Reason: different data, different providers, different failure modes; P15§4 demands they stay reconcilable but never merged into one balance. `budget` is consulted for admission through orchestration and fed spend events through the queue; domains never call it directly.
+- `compliance` (new): market-and-function matrix, age and residence declarations, versioned acceptances, teacher declarations and the data agreement, coverage of minors' authorizations and the guardian page, privacy requests, provider registry. Reason: legal rules and evidence with their own retention; `identity` stays focused on authentication and access.
+- `support` (the base document's `report`): reports, cases, conversations, public form, inbound email, FAQ. `moderation` (new, split from it): publication review, automatic classification, graduated measures, system actions, appeal decisions. Reason: one serves users, the other judges content; they meet only through case references.
+- `analytics`: receives events through queues from the domains; owns its analysis tables (P34).
+- The existing `discovery` stub is removed: catalog and search belong to `game`; composer presents them (P15§6 keeps "Discovery presents the authorized catalog" as a responsibility, not a domain).
+- `classroom` also owns the private family groups of C-02: the same membership machinery as classes, without grades or materials.
+- Shared packages that are not domains (documented in the site's Packages section): transactional queue with dead-letter handling, windowed limits, object storage, logging, metrics.
+
+Discarded while closing:
+- An `admin` domain: admin is a mode, not an owner. Identity holds the administrator account and second factor; each domain exposes its own admin operations; composed admin views live in composer. The sensitive-action record is each domain's data trail with actor and reason.
+- An `email` domain: email is a channel of `notifications` (outbound Resend/SES) and an intake of `support` (inbound SES), both behind ports.
+- Making `creation` a subdomain of `game`: it coordinates game and play and owns neither; as a subdomain it would force cross-tree calls.
+- Promoting `session`/`versions` to top level (the base's own criterion): coordination reaches them as `play`'s exported surface, so the parent still contains them.
+
+Tree rule as applied: a parent's exported surface may be implemented in its subdomains, and orchestrator/composer name the subdomain operation precisely (`play.session.create-session`); what the tree forbids is any traditional domain knowing another's subdomains, and sibling subdomains coupling beyond what their parent's internal rules allow. No responsibility of SPEC_MAP §4–§20 has more than one owner; none required a creator decision (P15§6 delegates grouping to the team).
 
 **D-002 · Three git repositories.** The workspace (`repos/`) is its own repository for the specification, the plan and the documentation site, with `playhoot/` and `playhoot_frontend/` ignored. Reason: the plan and handoffs are the memory between sessions and had no history.
 
@@ -37,6 +48,8 @@ Kept from the base document: `api`, `orchestrator`, `composer`, `identity`, `gam
 **D-007 · Language (set by the creator, 2026-11-15).** Everything the agent produces is in English: code, comments, commits, agent documents, the system documentation site, and messages to the creator. The product specification stays in Spanish as written.
 
 **D-008 · System documentation conventions (T-001).** Entity ids follow the spec: operations `<domain>.<kebab-verb>` (e.g. `play.session.create-session`) with the code name as `name`; flows by kebab name. A `table` may carry the optional `lifecycle` when the state lives in that table (the Session state machine sits on `play_sessions`). A flow's step must name the domain that owns its operation (validated). Frontend data files declare `/* global PH */` so the repo lint passes. In Git Bash the frontend tests fail to start (path casing); run `npm run check` from PowerShell.
+
+**D-009 · Documentation model additions (T-002).** Two additions to the site's data model (spec updated in `designs/system-docs.md`): a `planned` flow may carry `touches` (domain ids) instead of steps and persistence until its milestone design details it — the validator enforces one or the other; and a `package` entity documents the shared technical packages (queue, limits, storage, logging, metrics) in their own site section, so H1 has a home for the queue's documentation. Domains may also list `references`: which other domains' external identifiers they store.
 
 ## V — Defaults
 
