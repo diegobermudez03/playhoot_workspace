@@ -36,6 +36,8 @@ Kept from the base document: `api`, `orchestrator`, `composer`, `identity`, `gam
 
 **D-007 · Language (set by the creator, 2026-11-15).** Everything the agent produces is in English: code, comments, commits, agent documents, the system documentation site, and messages to the creator. The product specification stays in Spanish as written.
 
+**D-008 · System documentation conventions (T-001).** Entity ids follow the spec: operations `<domain>.<kebab-verb>` (e.g. `play.session.create-session`) with the code name as `name`; flows by kebab name. A `table` may carry the optional `lifecycle` when the state lives in that table (the Session state machine sits on `play_sessions`). A flow's step must name the domain that owns its operation (validated). Frontend data files declare `/* global PH */` so the repo lint passes. In Git Bash the frontend tests fail to start (path casing); run `npm run check` from PowerShell.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:

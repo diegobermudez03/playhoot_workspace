@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playhoot System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <nav class="tabs" aria-label="Sections">
+    <a href="#/">Home</a>
+    <a href="#/domains">Domains</a>
+    <a href="#/operations">Operations</a>
+    <a href="#/flows">Flows</a>
+    <a href="#/data">Data</a>
+    <a href="#/endpoints">Endpoints</a>
+    <a href="#/screens">Screens</a>
+    <a href="#/lifecycles">Lifecycles</a>
+  </nav>
+  <div class="tools">
+    <form id="search" role="search"><input id="q" type="search" placeholder="Search" aria-label="Search"></form>
+    <label class="only"><input id="only-impl" type="checkbox"> Implemented only</label>
+  </div>
+</header>
+<main id="main"><p>Loading…</p></main>
+<script src="app.js"></script>
+<!-- Data lives next to the code it describes. A missing repository is reported, not fatal. -->
+<script src="../../playhoot/docs/system/manifest.js" onerror="PH.missing('backend', 'playhoot/docs/system/manifest.js')"></script>
+<script src="../../playhoot_frontend/docs/system/manifest.js" onerror="PH.missing('frontend', 'playhoot_frontend/docs/system/manifest.js')"></script>
+<script>PH.ready();</script>
+</body>
+</html>

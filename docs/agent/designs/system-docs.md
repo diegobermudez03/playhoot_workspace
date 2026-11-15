@@ -26,7 +26,7 @@ Every entity has a unique `id`, a `name`, a `summary` (one sentence) and a `stat
 
 **domain** — `id` (`play`, `play.session`), `parent` (id or `null`), `kind` (`traditional` | `entry` | `orchestrator` | `composer` | `process`), `responsibilities[]`, `doesNotKnow[]` (what it deliberately ignores), `sources[]` (e.g. `P15§2`).
 
-**table** — `id` (`<domain>.<real_table_name>`), `domain`, `purpose`, `columns[{name, type, note}]`, `indexes[]`, `history` (how change is traced: change table, write-once columns, or `infrastructure` when exempt), `references[{column, to}]` where `to` is a logical entity of another domain (by external identifier) or a table of the same domain.
+**table** — `id` (`<domain>.<real_table_name>`), `domain`, `purpose`, `columns[{name, type, note}]`, `indexes[]`, `history` (how change is traced: change table, write-once columns, or `infrastructure` when exempt), `references[{column, to}]` where `to` is a logical entity of another domain (by external identifier) or a table of the same domain, `lifecycle` (optional, when the state machine lives in this table).
 
 **operation** — an operation a domain exposes. `id` (`<domain>.<verb>`), `domain`, `kind` (`usecase` | `workflow`), `effect` (`read` | `write`), `reads[]` and `writes[]` (table ids), `rules[]` (the main ones, in plain language), `limits[]` (`{what, value, source: plan|domain}`), `steps[]` (when it is an internal workflow), `lifecycle` (optional: `{states[], transitions[{from, to, on}]}`), `enqueues[]` (queue tasks it leaves), `callsSubdomains[]` (operation ids of child subdomains), `sources[]`.
 
@@ -61,8 +61,9 @@ Interaction rules:
 
 ## 5. Validation
 
-`tools/validate-docs.mjs` (Node, no dependencies), run from the workspace root:
+`tools/validate-docs.mjs` (Node, no dependencies), run from the workspace root (an optional argument points it at another workspace root, used to test it on a broken copy):
 - unique ids; required fields; every reference resolves (`domain`, `reads`, `writes`, `invokes`, the `operation` of steps, `calls`, `navigatesTo`, `parent`).
+- a flow step's `domain` must be the domain of its `operation`.
 - a `flow` may only have `orchestrator` or `composer` as `coordinator`; an `operation` of a domain does not reference tables of another top-level domain (architecture rule).
 - output: errors with file and id; non-zero exit code when there are errors.
 

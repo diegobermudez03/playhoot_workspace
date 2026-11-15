@@ -41,7 +41,7 @@ States: `pending` · `in progress` · `done` · `blocked`. Size: S, M, L. Tier: 
 | Task | What | Tier | Size | State |
 |---|---|---|---|---|
 | T-000 | Full reading, specification map, inventory, gaps, method, plan, repos ready | A | L | done |
-| T-001 | System documentation site: structure, views, validator and seed data | B | M | pending |
+| T-001 | System documentation site: structure, views, validator and seed data | B | M | done |
 | T-002 | Target architecture: close D-001 and load domains, responsibilities, dependencies and flow catalog in `planned` | A | L | pending |
 | T-003 | Cleanup of both repos: remove old documentation process, versioned binary, empty folders | C | M | pending |
 | T-004 | Load the existing backend into the documentation as `implemented` | C | L | pending |
