@@ -60,7 +60,7 @@ Order: T-001 → T-003 → T-002 → T-004 → T-005. H0 is closed.
 | T-102 | Admin second factor: grant, TOTP, admin token, single-use step-up proofs | B | M | done |
 | T-103 | Compliance core: market matrix (P35 seed), declarations, minority signals, acceptances | B | M | done 2026-11-15 |
 | T-104 | Plan minimal: configurable free limits and get-user-limits | C | S | done 2026-11-15 |
-| T-105 | Budget core: rates, caps, spend ingestion, admission, restriction ladder, cutoff/reopen | B | L | pending |
+| T-105 | Budget core: rates, caps, spend ingestion, admission, restriction ladder, cutoff/reopen | B | L | done 2026-11-15 |
 | T-106 | Notifications: entries, preferences, email via Resend/SES ports (simulated), suppressions | B | L | pending |
 | T-107 | Analytics ingestion: event store, queue path, first emitters | C | S | pending |
 | T-108 | H1 walkthrough per P16§2; move to `verified`; close the milestone | B | M | pending |
