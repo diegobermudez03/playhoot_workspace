@@ -63,6 +63,9 @@ Admission is reservation-based: `budget.admit-work` checks the restriction ladde
 **D-013 · Documentation model: package steps (T-100).**
 A flow step may name a `package` instead of `domain` + `operation` when the work is done by a shared package over infrastructure tables (the txqueue admin registry in `admin-dlqs` and `manage-dead-task`). Validator and `designs/system-docs.md` updated.
 
+**D-014 · Transactional queue as built (T-101).**
+`utils/txqueue`. A `Registry` holds every domain queue of the process (built in `main`, workers run on every instance, admin reads through it). Enqueue's fourth argument is an optional **idempotency key**: one live (pending, running or dead) task per type and key; a cancelled task frees it. Periodic tasks use their type as key, so only one is ever scheduled across instances. A claim sets the task `running` with `run_at` at the end of a 5-minute lease and counts the attempt; a crashed worker's task is claimed again when the lease ends, and a late completion of a lost lease is a no-op. Handlers run outside any transaction (they may call other domains through the orchestrator); a handler error retries, `txqueue.Permanent(err)` or a panic at the last attempt turns the task dead. A task whose type has no handler yet stays pending (the delivery types wait for T-105…T-107). `Handle` refuses the delivery types; `HandleDelivery` is the orchestrator's entry and takes only them. Admin retry/cancel of a task that is no longer dead answers `not_dead` with 200 (idempotent); an unknown task is 404. Identity's expired-grant sweep moved from grant creation to an hourly periodic task. Access: new level `admin` above `account` and operation `MANAGE_QUEUES`; no token reaches `admin` until T-102 issues admin-mode tokens, so the endpoints refuse everyone until then.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
@@ -73,3 +76,4 @@ Operational values the specification does not fix (anti-abuse windows, page size
 | V-02 | Queue retry policy: 10 attempts, exponential backoff from 10 s capped at 1 h, with jitter; completed tasks deleted; dead tasks kept until retried or cancelled | B: principles |
 | V-03 | TOTP: 5 failed codes per 15 min then a 15 min lock; step-up proof valid 10 min, single use | B: admin, P32§7 |
 | V-04 | Initial local cost caps until the creator sets real ones: global USD 120/month, 8/day, 1/hour; email USD 1/day; admission margin 10 % of the window remainder | P32§2, P32§9, P12§1 |
+| V-05 | Queue worker: poll every 2 s, claim 10 tasks per batch, 5 min lease (also the handler timeout); admin sees the newest 100 dead tasks per domain queue. Identity grant sweep: hourly, deletes grants expired more than 1 day ago, 500 per statement | B: principles |
