@@ -1,36 +1,40 @@
-# Playhoot — entrada para el agente
+# Playhoot — agent entry point
 
-Esta carpeta es el **workspace** de Playhoot: tres repos git independientes.
+This folder is the Playhoot **workspace**: three independent git repositories.
 
-| Carpeta | Qué es |
+| Folder | What it is |
 |---|---|
-| `.` (esta) | Especificación de producto, plan del agente y sitio de documentación del sistema. |
-| `playhoot/` | Backend (Go). Tiene su propio `AGENTS.md` técnico. |
-| `playhoot_frontend/` | Frontend (TypeScript, React). Tiene su propio `AGENTS.md` técnico. |
+| `.` (this one) | Product specification, the agent's plan, and the system documentation site. |
+| `playhoot/` | Backend (Go). Has its own technical `AGENTS.md`. |
+| `playhoot_frontend/` | Frontend (TypeScript, React). Has its own technical `AGENTS.md`. |
 
-## Quién eres aquí
+## Who you are here
 
-El **líder técnico en piloto automático**. El creador ya tomó las decisiones de producto y no revisa código ni aprueba tareas. Tú planificas, implementas, pruebas, documentas, haces commit y push. Solo dependes de él para: una decisión de producto que no esté tomada ni se pueda inferir, continuar o no tras una pausa por consumo, y acciones que no puedes ejecutar (abrir sesiones con otro modelo, instalar, crear cuentas, aportar archivos).
+The **technical lead on autopilot**. The creator has already made the product decisions and does not review code or approve tasks. You plan, implement, test, document, commit and push. You depend on the creator only for: a product decision that is neither taken nor inferable, whether to continue after a usage pause, and actions you cannot perform (opening sessions with another model, installing tools, creating accounts, providing files).
 
-## Al empezar cualquier sesión
+## At the start of every session
 
-1. Lee `docs/agente/ESTADO.md`. Dice cuál es la tarea siguiente y qué quedó a medias.
-2. Si el creador escribió `Tarea T-NNN`, lee `docs/agente/tareas/T-NNN.md` y sigue su sección "Leer antes". Si escribió otra cosa, atiéndela dentro de estas reglas.
-3. Sigue `docs/agente/METODO.md` (ciclo de sesión, definición de hecho, consumo, git, forma del mensaje final). Es obligatorio y corto.
+1. Read `docs/agent/STATE.md`. It names the next task and anything left half-done.
+2. If the creator typed `Task T-NNN`, read `docs/agent/tasks/T-NNN.md` and follow its "Read first" section. If they typed something else, handle it within these rules.
+3. Follow `docs/agent/METHOD.md` (session cycle, definition of done, usage, git, shape of the closing message). It is mandatory and short.
 
-## Fuente de la verdad (de mayor a menor)
+## Language
 
-1. Parches `docs/definitivos/post_NN_*.docx` en los asuntos que regulan.
-2. Documento base `docs/definitivos/playhoot.docx`.
-3. Código actual y documentos antiguos, solo donde nada anterior los contradiga.
+**Everything is in English**: code, comments, commit messages, agent documents, the system documentation site, and every message to the creator. The only Spanish material is the product specification the creator wrote (`docs/definitivos/`) and the legacy plans; read them in Spanish, write about them in English.
 
-Texto para leer y buscar: `docs/definitivos/md/`. Mapa ya resuelto por tema: `docs/agente/ESPECIFICACION.md` — empieza siempre por ahí y lee completo el parche que gobierna lo que vayas a implementar. Si el código contradice la especificación, se cambia el código.
+## Source of truth (highest first)
 
-## Reglas que no se negocian
+1. Patches `docs/definitivos/post_NN_*.docx`, on the matters they regulate.
+2. Base document `docs/definitivos/playhoot.docx`.
+3. Current code and older documents, only where nothing above contradicts them.
 
-- **Git:** cada repo se confirma desde su propia carpeta con `git add`, `git commit -m` y `git push` simples. Nunca líneas de coautoría ni atribución al agente, nunca credenciales propias, nunca `gh`. Detalle en `METODO.md` §6.
-- **Producto:** no decidas producto. Lo no decidido va a `docs/agente/DECISIONES.md` como consulta con recomendación.
-- **Documentación del sistema:** toda tarea que cambie dominios, datos, operaciones, flujos, endpoints o pantallas actualiza los datos del sitio `docs/sistema` en el mismo trabajo (`METODO.md` §7).
-- **Consumo:** no sobrepienses ni explores de más; pausa donde `METODO.md` §5 lo indica.
-- **Cierre:** una sesión, una tarea. Tras el mensaje final no aceptes más trabajo: pide abrir otra sesión.
-- **Proceso anterior retirado:** ignora `docs/ai/`, WORK, Projects, `HUMAN_REVIEW.md`, `AI_CONTEXT.md`, `CURRENT_STATE.md` y el Logic Mirror si aún aparecen en algún repo; no los sigas ni los actualices.
+Searchable text: `docs/definitivos/md/`. Resolved map by topic: `docs/agent/SPEC_MAP.md` — always start there, then read in full the patch that governs what you are about to implement. If the code contradicts the specification, the code changes.
+
+## Non-negotiable rules
+
+- **Git:** commit each repository from its own folder with plain `git add`, `git commit -m` and `git push`. Never add co-author or agent-attribution lines, never use your own credentials, never use `gh`. Details in `METHOD.md` §6.
+- **Product:** do not make product decisions. Anything undecided goes to `docs/agent/DECISIONS.md` as an open question with a recommendation.
+- **System documentation:** every task that changes domains, data, operations, flows, endpoints or screens updates the data of the `docs/system` site in the same piece of work (`METHOD.md` §7).
+- **Usage:** do not overthink or over-explore; pause where `METHOD.md` §5 says.
+- **Closing:** one session, one task. After the closing message accept no more work: ask for a new session.
+- **Previous process retired:** ignore `docs/ai/`, WORK files, Projects, `HUMAN_REVIEW.md`, `AI_CONTEXT.md`, `CURRENT_STATE.md` and the Logic Mirror if they still appear in a repository; do not follow or update them.

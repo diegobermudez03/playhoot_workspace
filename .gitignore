@@ -1,10 +1,10 @@
-# Repos de código: cada uno tiene su propio git
+# Code repositories: each has its own git
 /playhoot/
 /playhoot_frontend/
 
-# Estado local de Claude Code
+# Local Claude Code state
 /.claude/usage.json
 /.claude/settings.local.json
 
-# Archivos temporales de Office
+# Office temporary files
 ~$*

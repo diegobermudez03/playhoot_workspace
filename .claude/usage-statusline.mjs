@@ -1,6 +1,6 @@
-// Barra de estado de Claude Code: muestra el consumo del plan y lo guarda en
-// .claude/usage.json para que el agente pueda leerlo al inicio y al cierre de
-// cada tramo de trabajo (docs/agente/METODO.md §5).
+// Claude Code status line: shows plan usage and saves it to .claude/usage.json
+// so the agent can read it at the start and end of each stretch of work
+// (docs/agent/METHOD.md §5).
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,7 +31,7 @@ try {
   const here = dirname(fileURLToPath(import.meta.url));
   writeFileSync(join(here, 'usage.json'), JSON.stringify(snapshot, null, 2));
 } catch {
-  // La barra de estado nunca debe fallar por no poder escribir.
+  // The status line must never fail because the file could not be written.
 }
 
 const show = (value) => (value === null ? '—' : `${Math.round(value)}%`);
