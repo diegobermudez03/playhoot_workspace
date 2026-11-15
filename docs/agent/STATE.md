@@ -1,16 +1,16 @@
 # State
 
-_Updated: 2026-11-15, closing of T-002._
+_Updated: 2026-11-15, closing of T-004._
 
 ## Next task
 
-**T-004** · model **Sonnet** · effort **medium** · brief in `tasks/T-004.md`.
+**T-005** · model **Sonnet** · effort **medium** · brief in `tasks/T-005.md`.
 
-Then: T-005 (Sonnet · medium) → T-100 (Fable · high).
+Then: T-100 (Fable · high).
 
 ## Current milestone
 
-H0 — Method and documentation base. See `PLAN.md`. T-004 and T-005 close it.
+H0 — Method and documentation base. See `PLAN.md`. T-005 closes it.
 
 ## In progress
 
@@ -22,8 +22,10 @@ None. C-03 (visual direction) is planned for H2.
 
 ## Notes for the next session
 
-- T-002 closed the target tree (D-001) and loaded it into the site with the flow catalog in `planned`. T-004 loads the **existing backend** detail (tables, operations, endpoints) as `implemented` under the domains already registered; follow D-008 and D-009 conventions, and `inventory/backend-domains.md` is the map of what exists.
-- Some catalog flows in `playhoot/docs/system/flows.js` already partially exist in code (e.g. `create-game`, `start-creation`, `external-ai-edit`). When T-004 documents the implemented version of one, it **replaces** the planned entry under the same id: real steps as the code has them, status `implemented`, and the future touches that the code lacks stay in `GAPS.md`, not in the flow.
+- T-004 loaded the existing backend (47 tables, ~46 operations, 73 flows including the cross-domain ones, 106 endpoints: 80 REST + 4 WS + 22 MCP) into `playhoot/docs/system/` as `implemented`. The validator passes at 0 errors. T-005 does the same for the frontend, following the same style.
+- `create-game`, `start-creation` and `external-ai-edit` now have real `steps` (no more `touches`); new flows were added for the rest of the orchestrator/composer groups (`edit-draft`, `ensure-draft`, `start-draft-preview`, `game-ai-link`, `publish-game`, `open-edition`, `ai-link-status`, `read-draft-workspace`, `simulate-draft`, `browse-game-templates`). Nothing in `GAPS.md` needed to change: the gaps these flows leave out (compliance/plan checks, moderation review, budget admission, Discovery catalog) were already recorded there.
+- `play.versions` as a domain stayed `status: planned` (the split from `play.session` and the four version conditions are future design), but its tables and operations that already exist in code (drafts, builds, previews, simulation results) are loaded individually as `implemented`. Same for `play.replay` (recording only; playback/retention still planned).
+- `backend-entrypoints-infra.md`'s note about the resource-grants/asset-upload-URL work being uncommitted is now stale: it is committed (`11f1eee`). Worth refreshing that inventory file if it is read again for something else; not corrected here since it is a snapshot document, not source of truth.
 - The system documentation site works: `docs/system/index.html`; validate data with `node tools/validate-docs.mjs` from the workspace root. Conventions in `DECISIONS.md` D-008 and D-009.
 - `.claude/usage.json` does not exist, so usage is not measured automatically: ask the creator to check `/usage` at pause points.
 - Run the frontend `npm run check` from PowerShell; in Git Bash vitest fails to start every test file (path casing), which is not a real failure.
