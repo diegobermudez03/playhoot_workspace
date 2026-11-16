@@ -372,6 +372,42 @@ Building D-034/D-037/D-038 settled five things the design left open.
   case rather than repeating its query, and text versions are counted **per kind and language**, so
   publishing one language never moves another.
 
+**D-041 · What deletion and guest expiry taught (T-303).**
+Building D-036 settled six things the design left to the code.
+- **Access ends wider than the design listed.** The deletion transaction also revokes the person's
+  AI connections (`identity_ai_sessions`, reason `user_deleted`) and *deletes* their single-use
+  resource grants rather than marking them: a grant is a live token hash with no history of its
+  own, as the sweep that deletes the expired ones already shows. A link keeps `revoked_at`, which
+  is its record.
+- **A removed method must also stop naming the person.** Setting `removed_at` left the address
+  (and, for the email provider, the `subject`, which *is* the address) on the row forever. Deletion
+  now clears `subject`, `email` and `name` on the person's method rows, and the name kept with a
+  guest's creation request (`identity_guest_requests.display_name`): what stays is that a method
+  existed and when it went. The partial unique index is scoped to live rows, so cleared rows never
+  collide. **Not covered, and now a gap**: the login-attempt and email-code trails hold observed
+  addresses that are not keyed to a User; they go with H11's privacy-request design.
+- **The account row stays, the mode is reset.** Deleting the `identity_accounts` row would turn a
+  deleted account into something the guest sweep treats as a guest. The row stays and its mode goes
+  back to normal, recorded in the settings history like any other switch; `interface_language` is
+  cleared and recorded the same way (D-040's history table carries both).
+- **Two write-once columns, no history rows.** `identity_users.deleted_at` carries a cause column
+  `deleted_origin` written with it (requested or expiry), which is rule 3 of the data-history
+  standard, not a new table. `games.deleted_at` is likewise its own record: the design said the
+  deletion would write `game_histories`, but that table has no column for it and rule 1 does not
+  ask for one. The site data was corrected on both.
+- **`last_used_at` is an exception to the history rule, and it is written in the standard.** It is
+  overwritten in place, which rule 2 would send to a history table; it is the same kind of value as
+  the Session owner lease the standard already exempts — a periodic activity mark nobody reads the
+  past of. The exception list in `playhoot/docs/engineering/standards/data-history.md` now names
+  it. A rotation carries the mark onto the successor row, so rotating costs no extra statement.
+- **The cleanup is a delivery type, and deleting entries takes their delivery records.**
+  `account-cleanup` joins notify, analytics-event and spend-event as a `txqueue` delivery type the
+  orchestrator registers (`orchestrator/accountcleanup`), on Identity's queue alone. Inside
+  Notifications, `notifications_email_deliveries` point at entries by row, so they are deleted with
+  them in the same transaction rather than left to their own 30-day clock. V-12's "admin alert"
+  needed no code: a dead task already logs `task_outcome=dead` and sits in the dead letter queue
+  the admin panel reads.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
