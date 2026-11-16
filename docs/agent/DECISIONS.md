@@ -408,6 +408,39 @@ Building D-036 settled six things the design left to the code.
   needed no code: a dead task already logs `task_outcome=dead` and sits in the dead letter queue
   the admin panel reads.
 
+**D-042 · What the ways in and the declaration taught the frontend (T-304).**
+Building D-033/D-037/D-038 in the browser settled five things the design had left to the code.
+- **The acceptance step is a gate, not a step of the sign-in screen.** D-037 put it inside the
+  contextual screen, but a sign-in finishes in two places — on that screen (a code by email) and
+  on the provider callback — and in both the screen that started it is gone by the time there is
+  an account. It sits in `ClientLayout` beside the display-name gate the app already had, so it is
+  met once however the sign-in finished, and again when a text version changes, which is what
+  D-037 asked for. A guest never meets it (C-01): only `authenticated` is gated. The texts are
+  read in the language the person arrived in and the acceptance points at that exact version, so
+  changing language afterwards does not ask again.
+- **A text that cannot be read is not asked for.** Nothing is published until the creator loads
+  the real texts (P-23), and a backend that cannot be reached must not become a locked door: a
+  kind that answers `text_not_found`, or does not answer, is simply not asked for, and the next
+  sign-in asks again. The backend remains the authority on anything that depends on an acceptance.
+- **The declaration cannot name the age before it is answered.** P19 wants the threshold of the
+  place in the declaration, but nothing public tells a client what a place asks for: the matrix is
+  admin-only and `POST /v1/compliance/declaration` answers `threshold_age` only once a declaration
+  is recorded. The checkbox therefore says "the minimum age Playhoot asks for where I live", and
+  the age is named afterwards, in the refusal a below-threshold answer leads to. A public read of
+  a place's threshold would close this; H4 should add one when it wires publish and subscribe
+  (`GAPS.md`). For the same reason the screen does not know which countries are kept per state or
+  province: it offers that field for the United States and Canada, and for any country the backend
+  refuses the place of, which is correct whatever the matrix says.
+- **Saying "no" is a separate, confirmed action.** A below-threshold answer is recorded, binding
+  and only correctable through support (P19§3), so it is not something a person can do by leaving
+  a box unticked: continuing needs the box, and "I haven't reached that age" is its own action
+  behind a confirmation that says what it costs.
+- **A gate refusing is not an error.** `declaration_required` and `market_restricted` join the
+  join-rejection reasons and the create-game refusals, and the join screen offers the declaration
+  the way it offers another code. They are left out of the telemetry error catalog: that catalog
+  is the backend's closed list, and a market decision counted as a backend rejection would read as
+  a failure in the join metrics. Compliance already counts its own decisions.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:

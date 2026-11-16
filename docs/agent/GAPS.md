@@ -26,17 +26,18 @@ None of the following existed at the snapshot: plans and payments, credits, budg
 
 ## Identity and access
 
-Rewritten by T-300 (16 Nov 2026), whose design covers this whole table: every open row is either an
-H3 task written on the board or explicitly assigned to a later milestone.
+Rewritten by T-300 (16 Nov 2026) and kept current by each H3 task; this one by T-304 (16 Nov 2026).
+Every open row is either an H3 task written on the board or explicitly assigned to a later milestone.
 
 | Topic | State | What is missing or changes | Owner |
 |---|---|---|---|
 | Guest, account, Google, local provider | ✅ | Google never tested against the real one. | Delivery 2 (`CREATOR_TODO.md` D-01) |
 | Guest upgrade without merging with existing accounts | ✅ | Matches P03§10; the email-code path reuses it. | — |
-| Email code | ✅ | Built (T-301): one-time code sign-in, registration and guest upgrade, with V-09's limits and the neutral acknowledgement. The code rides the existing notify path; identity resolves the attempt to its address. | — |
-| Guest expiry at 90 days | ✅ | Built (T-303): daily periodic task on the identity queue, 90 days measured from the newest session use (else their creation), batches of 500, each guest through the same deletion with origin `expiry`. An upgraded guest is an account and is never swept. | — |
-| Declared age, country, market matrix | 🔧 | Core built (T-103); the two entries that exist are gated (T-302): create-game checks `create-games` and the session-join admission checks `interactive-use` before anything names the Session. Admin publishes the texts (`GET/PUT /admin/v1/texts`). Missing: the `/declaration` screen the `declaration_required` refusal routes to, and the gates of the flows H4/H6/H8 build. | **T-304** (screen); H4/H6/H8 (their own gates) |
+| Email code | ✅ | Built end to end: the backend in T-301 and the way in on the authentication screen in T-304 (address, 6-digit code, the neutral acknowledgement, a wrong code told apart from a spent attempt, a guest warned before a code is sent). Walked in a browser against a live backend. | — |
+| Guest expiry at 90 days | ✅ | Built (T-303): daily periodic task on the identity queue, 90 days measured from the newest session use (else their creation), batches of 500, each guest through the same deletion with origin `expiry`. An upgraded guest is an account and is never swept. T-304 discloses the term where a guest is created (P02§9); the profile says it again (T-305). | — |
+| Declared age, country, market matrix | 🔧 | Core built (T-103); the two entries that exist are gated (T-302): create-game checks `create-games` and the session-join admission checks `interactive-use` before anything names the Session. Admin publishes the texts (`GET/PUT /admin/v1/texts`). The `/declaration` screen both refusals route to is built (T-304), and it comes back to what asked with everything typed. Missing: the gates of the flows H4/H6/H8 build, and a public read of what a place asks for, which is why the screen cannot name the age before it is answered (D-042). | H4/H6/H8 (their own gates, and the public read) |
 | Normal/teacher/student modes | 🔧 | Backend built (T-302): `mode` on the account, carried by the access token, `PUT /v1/identity/me/mode` answers a fresh one; guests refused. Missing: the switch in the interface and the honest teacher presentation. Student identity is H8's, with identity's obligations to it fixed in D-034. | **T-305**; H8 (student, teacher dashboard) |
+| Recorded acceptances (P22§3) | 🔧 | Backend built (T-103, T-302). T-304 asks for the terms and own-data texts where a sign-in finishes, records each at its exact version, and links both texts for everyone; nothing is published yet, so the step shows the seeded drafts until the creator loads the real ones (`CREATOR_TODO.md` P-23). Missing: the marketing acceptance on the preferences screen, the class agreement and its download in the profile, and the admin panel that publishes them. | **T-305** (preferences, profile legal), **T-306** (panel) |
 | Per-class student identity with credential | ➕ | P03§2-7. Identity's contract for it is written down (D-034); the build is the classroom milestone's. | H8 |
 | Link methods, recovery | ✅ | Built (T-301): linking an address or a provider identity, `method_in_use` instead of merging, listing and removal with the last-method guard. Email-code sign-in is the recovery P03§12 describes. | — |
 | Profile and my-data | 🔧 | Backend built (T-302): `GET /v1/me` composes identity, declaration and free limits, and answers a piece that could not be read as missing. Missing: the profile screens. | **T-305** (screens) |
@@ -147,9 +148,10 @@ and verified it as behaviour: `scripts/verify/seo.mjs`, `scripts/verify/a11y.mjs
 | Presentation of the existing screens | Join, lobby, play, host, my games and the creation workspace work (walked end to end against a live backend in T-207) but still wear the old layouts under the new tokens. Each is redesigned with its own milestone. | H4 (games, workspace), H5 (sessions, play) |
 | Per-screen titles and metadata for app routes | They fall back to "Playhoot". | the milestone that redoes each screen |
 | Home, Discovery and the public card | The home page says plainly that the catalog arrives with Discovery (D-029). Search, categories, the public game card and the sitemap entries that D-019 wants to target are not built. | H4 |
-| Profile, account, history and replay | Nothing exists. | H3 (profile, account), H5 (history, replay) |
+| Profile, account, history and replay | T-304 added the residence-and-age declaration (`/declaration`); the profile area itself, the sign-in methods screen and deletion are still nothing. | H3 (T-305: profile, account), H5 (history, replay) |
 | Teacher and student modes | The mode switch explains that they are coming and leaves the person where they are; nothing behind them exists. | H8 |
-| Notifications beyond the bell | Where a notification leads, the notifications page and preferences. | each milestone for its own types; H3 for preferences |
+| Notifications beyond the bell | Where a notification leads, the notifications page and preferences. | each milestone for its own types; H3 (T-305) for preferences |
+| The age a place asks for, before it is declared | Nothing public tells a client the threshold of a place: the market matrix is admin-only, and `POST /v1/compliance/declaration` answers `threshold_age` only once a declaration is recorded. The declaration screen therefore words its checkbox without a number and names the age only afterwards (D-042), and it guesses from a closed list which countries need a state or province, correcting itself from the backend's refusal. A public read of one place's rules for one function would close both. | H4, which wires the publish and subscribe gates and meets the same need |
 | Plans, purchases, credits | No screen. | H6 |
 | AI chat, asset library, captures | No screen. | H7 |
 | Support and reports | No screen. | H9 |
