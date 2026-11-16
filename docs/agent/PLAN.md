@@ -62,7 +62,7 @@ Order: T-001 → T-003 → T-002 → T-004 → T-005. H0 is closed.
 | T-104 | Plan minimal: configurable free limits and get-user-limits | C | S | done 2026-11-15 |
 | T-105 | Budget core: rates, caps, spend ingestion, admission, restriction ladder, cutoff/reopen | B | L | done 2026-11-15 |
 | T-106 | Notifications: entries, preferences, email via Resend/SES ports (simulated), suppressions | B | L | done 2026-11-15 |
-| T-107 | Analytics ingestion: event store, queue path, first emitters | C | S | pending |
+| T-107 | Analytics ingestion: event store, queue path, first emitters | C | S | done 2026-11-15 |
 | T-108 | H1 walkthrough per P16§2; move to `verified`; close the milestone | B | M | pending |
 
 Order: T-101 → T-102 → T-103 → T-104 → T-105 → T-106 → T-107 → T-108.
