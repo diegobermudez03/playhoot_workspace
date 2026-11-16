@@ -77,10 +77,10 @@ Order: T-001 → T-003 → T-002 → T-004 → T-005. H0 is closed.
 | T-203 | Design system from the chosen direction (A — Ink & Sticker): tokens, fonts, core components, gallery | B | L | done 2026-11-15 |
 | T-204 | App shell and public home: fixed bar, mode switch, language, notifications badge/panel, home | B | M | done 2026-11-16 |
 | T-205 | Contextual authentication: one screen with reason, minimum account type and return | B | M | done 2026-11-16 |
-| T-206 | Admin web base: admin sign-in + TOTP enrollment, shell, queues/DLQ, budget, email panels | B | L | pending |
+| T-206 | Admin web base: admin sign-in + TOTP enrollment, shell, queues/DLQ, budget, email panels | B | L | done 2026-11-16 |
 | T-207 | H2 close: AA, SEO and PWA verification; `verified`; GAPS rewrite; close the milestone | B | M | pending |
 
-Order: T-201 → T-202 → T-203 → T-204 → T-205 → **T-206** → T-207. C-03 was answered at the close of T-202 (direction A), so T-203 runs next and everything after it is built on the real tokens rather than on the neutral placeholders D-021 allowed. T-207 cannot close H2 without T-203. 8 tasks against the 8–10 estimate.
+Order: T-201 → T-202 → T-203 → T-204 → T-205 → T-206 → **T-207**. C-03 was answered at the close of T-202 (direction A), so T-203 runs next and everything after it is built on the real tokens rather than on the neutral placeholders D-021 allowed. T-207 cannot close H2 without T-203. 8 tasks against the 8–10 estimate.
 
 ### H3 onwards
 

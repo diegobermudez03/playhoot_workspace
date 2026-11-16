@@ -161,6 +161,35 @@ WCAG 2.2 3.3.7).
   person actually leaves for a provider, so a guest is told there — before the app is left — that a
   new account keeps their name and games while entering an existing account does not merge them.
 
+**D-031 · Admin mode is a second credential, not a stronger one (T-206).**
+The admin area is built as D-023 designed it — an area of the same web app under `/admin`, its own
+minimal shell, one responsive implementation per screen — and the 15-minute token a TOTP code buys
+is kept as a **separate credential with its own HTTP client**: `adminSession` holds the token in a
+closure (never in storage, never in the store, gone with the tab or a reload), and a second
+`HttpClient` built on it is the only thing that ever calls `/admin/v1`. The account credential and
+its refresh are untouched, so an admin token that lapses or is refused ends admin mode alone.
+
+- **Where admin mode ends, the address says where to come back to.** Every `/admin/v1` failure is
+  read by one function (`adminFailure`); a 401 or a refused token answers `signed-out`, which
+  releases the session and navigates to `/admin/sign-in?next=<this panel>`. Signing in again
+  returns to that address, so a panel's state — which its URL carries — survives the trip.
+- **The account sign-in is not duplicated.** `/admin/sign-in` has no provider buttons: without an
+  account it sends the person to the one contextual screen of D-030 with the new reason `admin`
+  and itself as `next`, and with one it asks only for the code.
+- **A sensitive action spends its own code.** `withStepUp` turns the code into a proof and spends
+  it on exactly one call; `step_up_required` comes back as "ask again" without losing what was
+  typed about the change. The cutoff and a task cancellation are confirmed in the native `<dialog>`,
+  and the confirm form is built only while that dialog is open, so an abandoned code and reason are
+  not left sitting in the page.
+- **The QR is drawn here.** The otpauth URI is encoded into a QR in the browser
+  (`feature-admin/qr.ts`, byte mode, level M, versions 1–10), because sending a secret shown once to
+  an outside service to be turned into a picture would be the one place the secret leaves. The
+  secret is also shown as selectable text, so enrollment never depends on the picture.
+- **Backend values stay open.** Queue names, task types, budget categories, cap scopes, windows,
+  ladder levels, email modes and delivery states are rendered as the backend wrote them; only the
+  values this build knows get a translated name, and the categories offered to a reopening or a new
+  cap come from the answer itself.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
