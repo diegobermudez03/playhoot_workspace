@@ -78,10 +78,16 @@ Order: T-001 → T-003 → T-002 → T-004 → T-005. H0 is closed.
 | T-204 | App shell and public home: fixed bar, mode switch, language, notifications badge/panel, home | B | M | done 2026-11-16 |
 | T-205 | Contextual authentication: one screen with reason, minimum account type and return | B | M | done 2026-11-16 |
 | T-206 | Admin web base: admin sign-in + TOTP enrollment, shell, queues/DLQ, budget, email panels | B | L | done 2026-11-16 |
-| T-207 | H2 close: AA, SEO and PWA verification; `verified`; GAPS rewrite; close the milestone | B | M | pending |
+| T-207 | H2 close: AA, SEO and PWA verification; `verified`; GAPS rewrite; close the milestone | B | M | done 2026-11-16 |
 
-Order: T-201 → T-202 → T-203 → T-204 → T-205 → T-206 → **T-207**. C-03 was answered at the close of T-202 (direction A), so T-203 runs next and everything after it is built on the real tokens rather than on the neutral placeholders D-021 allowed. T-207 cannot close H2 without T-203. 8 tasks against the 8–10 estimate.
+Order as run: T-201 → T-202 → T-203 → T-204 → T-205 → T-206 → T-207. C-03 was answered at the close of T-202 (direction A), so T-203 moved ahead of the rest and everything after it was built on the real tokens rather than on the neutral placeholders D-021 allowed. **H2 closed 16-nov-2026** in 8 sessions, against the 8–10 estimate. T-207 verified the milestone as behaviour — rendering and SEO, the PWA, WCAG 2.2 AA, structure and the shell — with three re-runnable scripts in the frontend repo, fixed the three accessibility defects and the one SEO defect it found, and ran the join → lobby → play and creation-workspace regression that T-201 and T-203 had carried.
 
-### H3 onwards
+### H3 — Identity and access
+
+| Task | What | Tier | Size | State |
+|---|---|---|---|---|
+| T-300 | H3 design: email code, declared age and country, guest expiry, linking and recovery, profile, modes, account deletion; writes T-301… | A | L | pending |
+
+### H4 onwards
 
 Each milestone starts with `T-N00` (design, tier A) which writes its tasks here.

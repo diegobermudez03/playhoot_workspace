@@ -190,6 +190,30 @@ its refresh are untouched, so an admin token that lapses or is refused ends admi
   values this build knows get a translated name, and the categories offered to a reopening or a new
   cap come from the answer itself.
 
+**D-032 · What the server renders, and what every page is called (T-207).**
+The H2 close checked D-019 as a behaviour and found two things the code did not do.
+
+- **The join entry is rendered by the server; the authentication screen is not.** Both sat under
+  `ClientLayout`, which renders nothing on the server, so a crawler reading `/es/join` — a page the
+  sitemap offers — got a document with metadata and an empty `main`. `/{language}/join` now renders
+  outside `ClientLayout`: it picks its skeleton with `useMediaLayout`, its three shortcuts go
+  straight to their destination while the app is not yet interactive (each destination gates
+  itself with `RequireOperation`), and `AppShell` reads from the address that this page shows its
+  own big logo, as it already did for the admin area. **`/{language}/sign-in` stays
+  client-rendered on purpose**: it is `noindex`, it is only ever reached from another page, and
+  what it shows depends on who is already signed in and which providers the backend offers — a
+  server skeleton would be replaced a moment later and crawled by nobody. D-019 named it among the
+  server-rendered routes; this is the deliberate exception, and `scripts/verify/seo.mjs` encodes
+  it: a page offered to crawlers must carry its content, a public page that is not must still be a
+  complete document with its frame and its metadata.
+- **Every page now has a title.** Only public routes exported `meta`, so every app route — the
+  admin area, my games, the workspace, a session — served a document with no `<title>` at all,
+  which a screen reader announces as the raw address (WCAG 2.2 2.4.2, a level A failure found by
+  the audit). `root.tsx` now declares the fallback title and `seo/meta.ts` gained `appMeta`, which
+  resolves a message in the language the root resolved (an app address names none, D-024). The six
+  admin screens name themselves; the screens whose presentation later milestones redo get the
+  fallback and their own title with that work.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:

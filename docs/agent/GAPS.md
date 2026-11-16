@@ -7,7 +7,7 @@ Legend: ✅ exists and works · 🔧 exists and must be changed · ➕ does not 
 ## Summary
 
 What is built is the **technical core of playing and of creating with external AI**, and it is well done: isolated domains with no direct calls, data trail, idempotency, sandbox, real-time runtime, SDK v1, in-browser game isolation. It is roughly a quarter of the phase 1 scope.
-None of the following existed at the snapshot: plans and payments, credits, budget, teacher/student, notifications, reports and support, moderation, admin, public Discovery, history and replay playback, integrated AI, asset library, markets and age, analytics, transactional queue. H1 (closed 15-nov-2026) built the queue, budget core, free limits, notifications, compliance core, analytics ingestion and the admin second factor; see "H1 close".
+None of the following existed at the snapshot: plans and payments, credits, budget, teacher/student, notifications, reports and support, moderation, admin, public Discovery, history and replay playback, integrated AI, asset library, markets and age, analytics, transactional queue. H1 (closed 15-nov-2026) built the queue, budget core, free limits, notifications, compliance core, analytics ingestion and the admin second factor; see "H1 close". H2 (closed 16-nov-2026) built the frontend base — server rendering and SEO, the PWA, the "Ink & Sticker" design system, the shell and home, one contextual authentication screen and the admin web base — and verified it as behaviour; see "Frontend".
 
 ## Cross-cutting (backend)
 
@@ -107,26 +107,58 @@ None of the following existed at the snapshot: plans and payments, credits, budg
 | Minors' authorizations, agreements, acceptances, privacy requests | P20–P22 |
 | Reports, support, incoming email | P13, P33 |
 | Moderation and graduated measures | P13 |
-| Admin (everything) | B, P16 |
+| Admin: everything except the web base, the queues, budget and email panels that H2 built | B, P16 |
 | Analytics panel (ingestion exists since H1) | P34 |
 | Scheduled retention and deletion | P02§9-11 |
 
 ## Frontend
 
-| Topic | State | What is missing or changes |
+Rewritten at the close of H2 (T-207, 16 Nov 2026). H2 built the base every later screen stands on
+and verified it as behaviour: `scripts/verify/seo.mjs`, `scripts/verify/a11y.mjs` and
+`scripts/verify/pwa.mjs` in the frontend repo re-run those checks against a running host.
+
+### What H2 delivered
+
+| Topic | State | What it means |
 |---|---|---|
-| Package architecture, lint boundaries, layers | ✅ | Three routes call the client without going through state: fix. |
-| GameHost, bridge, game isolation, client SDK | ✅ | |
-| i18n es/en/pt-BR with parity | ✅ | |
-| Path navigation | ✅ | |
-| Join, lobby, play, host, creation with external AI, my games, authentication | ✅ | Their presentation is redone. |
-| Visual identity | 🔧 | The current one ("game night", owl) is the one the creator rejects. C-03 chose direction A (Ink & Sticker); T-203 replaces it. |
-| Two implementations per screen (horizontal/vertical) | 🔧 | Hybrid: some screens with variants, others with classes. |
-| SEO | ➕ | Pure SPA with no server rendering or per-route metadata. |
-| PWA | ✅ | T-202: manifest with placeholder icons, service worker, offline page, update notice and install offer; verified in a browser. Real icon art and the validation on real Android and iOS devices are still open (T-207, `CREATOR_TODO.md`). |
-| WCAG 2.2 AA | 🔧 | No verification. |
-| Everything else | ➕ | Home/Discovery, card, profile, history and replay, notifications, plans and purchases, teacher, student, support, admin, AI chat. |
-| Mobile app | — | Deferred by P01§5; `apps/mobile` is removed. |
+| Rendering and SEO | ✅ | React Router framework mode; the public pages of all three languages are rendered by the server with their content, title, description, canonical, hreflang, Open Graph and JSON-LD, and the home pages are written out at build time. robots.txt, the sitemap and a real 404 answer. Checked with no JavaScript by `verify:seo`. The authentication screen is the one deliberate exception (D-032). |
+| PWA | ✅ | Manifest, worker, precache, offline page, update notice, install offer; no push code anywhere and none ever (P29). 36 checks by `verify:pwa` against a production build, including the offline page with the worker really cut off the network. **Real Android and iOS devices are still unverified** (`CREATOR_TODO.md` P-13). |
+| Visual identity | ✅ | "Ink & Sticker" (C-03 direction A): three token tiers, core components, the `/design` gallery, `npm run styles` enforcing it. Nothing of the retired identity is reachable. |
+| Design system coverage | 🔧 | The core components exist; the screens of later milestones will need tabs, tables beyond the admin's, and a media/upload surface. Each milestone adds its own and puts it in `/design`. |
+| Shell, home, contextual authentication, admin base | ✅ | Thirteen screens are `verified` in the site data. |
+| WCAG 2.2 AA | ✅ | Zero A/AA violations from axe-core on the twelve H2 screens, plus a keyboard pass (order, visible ring, dialogs, no trap) and contrast measured from the running app. The screens of later milestones are audited as they arrive — the script takes a list. |
+| Two implementations per screen | ✅ | Home, join entry and contextual authentication each have a compact and a wide skeleton, chosen by the display and checked at five sizes with no horizontal scroll. The admin area is the single-implementation exception (D-023). |
+| The URL is the screen | ✅ | Every address H2 added reproduces its screen and its input on a cold load, in the language it names. |
+| i18n | ✅ | es / en / pt-BR in parity; the language is remembered on an address that carries none, and the page's `lang` follows the address after a client navigation. |
+| Document titles | 🔧 | Every page has one; the six admin screens name themselves, and the screens whose presentation a later milestone redoes carry the fallback until it does. |
+
+### What remains, and who owns it
+
+| Topic | What is missing | Milestone |
+|---|---|---|
+| Presentation of the existing screens | Join, lobby, play, host, my games and the creation workspace work (walked end to end against a live backend in T-207) but still wear the old layouts under the new tokens. Each is redesigned with its own milestone. | H4 (games, workspace), H5 (sessions, play) |
+| Per-screen titles and metadata for app routes | They fall back to "Playhoot". | the milestone that redoes each screen |
+| Home, Discovery and the public card | The home page says plainly that the catalog arrives with Discovery (D-029). Search, categories, the public game card and the sitemap entries that D-019 wants to target are not built. | H4 |
+| Profile, account, history and replay | Nothing exists. | H3 (profile, account), H5 (history, replay) |
+| Teacher and student modes | The mode switch explains that they are coming and leaves the person where they are; nothing behind them exists. | H8 |
+| Notifications beyond the bell | Where a notification leads, the notifications page and preferences. | each milestone for its own types; H3 for preferences |
+| Plans, purchases, credits | No screen. | H6 |
+| AI chat, asset library, captures | No screen. | H7 |
+| Support and reports | No screen. | H9 |
+| Admin panels beyond queues, budget and email | Users, games, moderation, analytics. | H10, and each milestone for its own panel |
+| Mobile app | Deferred by P01§5; `apps/mobile` is removed. | — |
+
+### Known limits of the H2 verification
+
+- **No DOM test environment** in the frontend: tests cover logic, and anything about rendering is
+  checked in a real browser. That is why the three `verify:*` scripts exist and why they are not
+  part of `npm run check`.
+- **Automated accessibility is not accessibility.** axe checks what a machine can decide. Two
+  things it could not decide were looked at by hand and are fine: a `<select>` whose arrow is drawn
+  with a gradient (its text is ink on paper, 15:1), and the join-code input, which is transparent
+  because the tiles beside it carry the characters.
+- **The QR of the admin enrollment has never been read by a real camera** (T-206); the secret is
+  always shown as text beside it.
 
 ## Process and documentation
 
