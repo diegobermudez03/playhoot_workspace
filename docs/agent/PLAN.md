@@ -88,7 +88,7 @@ Order as run: T-201 → T-202 → T-203 → T-204 → T-205 → T-206 → T-207.
 |---|---|---|---|---|
 | T-300 | H3 design: email code, declared age and country, guest expiry, linking and recovery, profile, modes, account deletion; writes T-301… | A | L | done 2026-11-16 |
 | T-301 | Identity ways in: email-code sign-in, method linking and removal, recovery; the access-code email path | B | L | done 2026-11-16 |
-| T-302 | Modes, language, profile data and entry gates: set-mode, interface language, my-data, name-change limit, market/age gates on create-game and join, admin texts endpoints | B | L | pending |
+| T-302 | Modes, language, profile data and entry gates: set-mode, interface language, my-data, name-change limit, market/age gates on create-game and join, admin texts endpoints | B | L | done 2026-11-16 |
 | T-303 | Deletion and guest expiry: delete-account cleanup across domains, 90-day sweep, activity tracking | B | M | pending |
 | T-304 | Frontend: email code and acceptances on the sign-in screen, the contextual declaration screen | B | M | pending |
 | T-305 | Frontend: profile area, notifications page and preferences, teacher presentation, shell mode switch | B | L | pending |

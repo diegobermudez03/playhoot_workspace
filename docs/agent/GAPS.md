@@ -35,15 +35,15 @@ H3 task written on the board or explicitly assigned to a later milestone.
 | Guest upgrade without merging with existing accounts | ✅ | Matches P03§10; the email-code path reuses it. | — |
 | Email code | ✅ | Built (T-301): one-time code sign-in, registration and guest upgrade, with V-09's limits and the neutral acknowledgement. The code rides the existing notify path; identity resolves the attempt to its address. | — |
 | Guest expiry at 90 days | 🔧 | Designed (D-036): daily sweep into the deletion pipeline; activity from session use. | **T-303** |
-| Declared age, country, market matrix | 🔧 | Core built (T-103). The entry wiring is designed (D-038): create-game gains the `create-games` gate, the join admission gains `interactive-use`, and the `declaration_required` outcome routes to the contextual declaration screen. Publish/subscribe/teach gates belong to the milestones that build those flows. Admin text publishing designed (D-037). | **T-302** (gates, texts endpoints), **T-304** (screen); H4/H6/H8 (their own gates) |
-| Normal/teacher/student modes | 🔧 | Designed (D-034): mode on the account, carried by the token, switch is identity-only; teacher shows the honest presentation until H8. Student identity is H8's, with identity's obligations to it fixed in D-034. | **T-302**, **T-305**; H8 (student, teacher dashboard) |
+| Declared age, country, market matrix | 🔧 | Core built (T-103); the two entries that exist are gated (T-302): create-game checks `create-games` and the session-join admission checks `interactive-use` before anything names the Session. Admin publishes the texts (`GET/PUT /admin/v1/texts`). Missing: the `/declaration` screen the `declaration_required` refusal routes to, and the gates of the flows H4/H6/H8 build. | **T-304** (screen); H4/H6/H8 (their own gates) |
+| Normal/teacher/student modes | 🔧 | Backend built (T-302): `mode` on the account, carried by the access token, `PUT /v1/identity/me/mode` answers a fresh one; guests refused. Missing: the switch in the interface and the honest teacher presentation. Student identity is H8's, with identity's obligations to it fixed in D-034. | **T-305**; H8 (student, teacher dashboard) |
 | Per-class student identity with credential | ➕ | P03§2-7. Identity's contract for it is written down (D-034); the build is the classroom milestone's. | H8 |
 | Link methods, recovery | ✅ | Built (T-301): linking an address or a provider identity, `method_in_use` instead of merging, listing and removal with the last-method guard. Email-code sign-in is the recovery P03§12 describes. | — |
-| Profile and my-data | ➕ | Designed (D-035, `my-data` flow, profile screens); the methods it calls exist (T-301). | **T-302** (reads), **T-305** (screens) |
+| Profile and my-data | 🔧 | Backend built (T-302): `GET /v1/me` composes identity, declaration and free limits, and answers a piece that could not be read as missing. Missing: the profile screens. | **T-305** (screens) |
 | Account deletion | ➕ | Designed (D-036, `delete-account` flow): immediate withdrawal, queued cleanup over game, play.session and notifications; compliance evidence kept restricted. | **T-303** (backend), **T-305** (screen); H5/H6/H8 append their cleanup steps; H11 (privacy requests, backups) |
 | Administrator with second factor | ✅ | Built and verified in H1 (T-102, D-015); admin web in H2 (T-206). This row was stale. | — |
-| Name change limit | 🔧 | Designed: 3 per rolling 30 days over the existing history (V-10). | **T-302** |
-| Interface language on the account | ➕ | Designed (D-034/D-022): stored by identity, read at email send time. | **T-302** |
+| Name change limit | ✅ | Built (T-302): 3 per rolling 30 days counted from the change history (V-10); the refusal names when the next change is possible. | — |
+| Interface language on the account | 🔧 | Backend built (T-302): stored by identity, returned by `read-contact`, so emails follow it. Missing: the interface choosing it. | **T-305** |
 | OAuth for AI (MCP) | 🔧 | Scope per **account** (`games`: all games). P10§1 requires authorization **per draft**. | H7 |
 | AI link (7 days, revocable) | 🔧 | Today it gives read and write. P10§2: the link only queries; writing requires separate authorization. | H7 |
 
@@ -181,7 +181,7 @@ The walkthrough `playhoot/walkthrough_h1_test.go` demonstrates H1 on the local d
 
 | Topic | What remains | Reconciled in |
 |---|---|---|
-| Existing flows ignore the new gates | create-game, create-session, join, previews, simulations and builds do not call `check-market-access`, `get-user-limits` or `admit-work`, and report no spend. | H3 (market and age at entry), H4 (games, creations), H5 (sessions, players), H6 (budget everywhere) |
+| Existing flows ignore the new gates | T-302 wired `check-market-access` into create-game and the session-join admission. create-session, previews, simulations and builds still do not call `get-user-limits` or `admit-work`, and report no spend. | H4 (games, creations), H5 (sessions, players), H6 (budget everywhere) |
 | Reach of the shutdown (P32§6) | Enforced at admission: every cost-bearing call is refused and its task retries until dead without reaching a provider. Queue workers keep running cheap, non-cost tasks (entries, analytics); live sessions are not interrupted by a shutdown. | H5/H6 (interrupting sessions and jobs), deployment controls (delivery 2) |
 | Ladder alert during a shutdown | The admin's `budget-level-changed` entry is created, but its email is refused like any other spend while shut down (the shutdown does not wait for an alert, P32§5). | H10 (admin panel shows the ladder); accepted |
 | P32§10 demonstrations not done locally | Growth with revenue and liquidity, lost or late metrics, late billing, deployment cutoff and residual charges, reaction times. Month change not lifting a shutdown is shown by the budget DB tests, not the walkthrough. | H6 (revenue, metrics), H13 and launch (`CREATOR_TODO.md`) |

@@ -344,6 +344,34 @@ Implementing D-033/D-035 settled four things the design left to the code.
   The metric guard rose from 1000 to 4000 series: the per-route request counter grows with the API
   and crossed the old ceiling with these eight endpoints.
 
+**D-040 · What modes, language, my-data and the entry gates taught (T-302).**
+Building D-034/D-037/D-038 settled five things the design left open.
+- **A settings history, not a data trail on the row.** Mode and interface language are both
+  overwritten in place, so the data-history standard asks for a history table, not "previous value"
+  columns: one append-only `identity_setting_changes` (user, setting, from, to, when) carries both.
+  The site data for `identity_accounts` was corrected accordingly.
+- **The mode rides the token everywhere a token is issued.** `set-mode` answers a fresh access
+  token and **no refresh token** (the client keeps its session); refreshing and both sign-in
+  completions read the account's mode in the query they already ran, so a teacher who signs in is
+  a teacher from the first request. The `mode` claim is informational in H3: nothing gates on it.
+- **Three operations, not one.** `SET_OWN_MODE`, `SET_INTERFACE_LANGUAGE` (account) and
+  `MANAGE_TEXTS` (admin) joined the catalog; `GET /v1/me` reuses `VIEW_OWN_IDENTITY` (guest), so
+  a guest reads their own data and is refused only on the two settings. The three endpoints live
+  in a new API group `api/me`, because `/v1/me` is a composed read and not Identity's own route.
+- **The gate is one package, used from both sides.** `orchestrator/marketgate` turns Compliance's
+  decision into `DeclarationRequiredError` (carrying the function) or `RestrictedError` (carrying
+  the service-restriction reason). `create-game` calls it as its first step; the session-join
+  admission calls it as an API middleware **before** join-code and owner routing, so a refusal
+  never reveals whether the Session exists. HTTP answers 403 `declaration_required` with the
+  function, or `market_restricted`; a live connection is refused on the upgraded socket with the
+  same two reasons.
+- **The approximate country needed wiring.** `api/geolocation` existed unused: the edge now notes
+  the client address on every request (cheap, no lookup) and only the handlers that need a country
+  ask the locator, through `geolocation.Resolver`. Locally it always answers unknown, so the gates
+  are live and open. Also corrected: `read-profile` lists methods through the `signinmethods` use
+  case rather than repeating its query, and text versions are counted **per kind and language**, so
+  publishing one language never moves another.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
