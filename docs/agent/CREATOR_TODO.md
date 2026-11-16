@@ -28,7 +28,7 @@ What only you can do, ordered by when it is needed. The agent keeps it current.
 | P-20 | Accounts and keys: Google OAuth, Anthropic, OpenAI, Resend, Amazon SES (us-east-1, production access and receiving), cloud object storage. | P03, P24, P31, P33 |
 | P-21 | Sign up and get verified with Lemon Squeezy describing the real product (AI, classes with minors, credits, card games without betting); Colombian bank account for payouts. | P23 |
 | P-22 | Choose cloud, machine and deployment shape; set budget amounts, caps and the acceptable residual exposure. | P32§8-9 |
-| P-23 | Real acceptance texts per market: terms, own-data notice, class data agreement and marketing consent in es/en/pt (local builds only have draft placeholders; production serves none until they exist). **Closing condition:** texts reviewed before delivery 2. Owner: creator. | P22§2-3, P35§6 |
+| P-23 | Real acceptance texts per market: terms, own-data notice, class data agreement and marketing consent in es/en/pt (local builds only have draft placeholders; production serves none until they exist). **Closing condition:** texts reviewed before delivery 2. Owner: creator. H3 builds the admin panel (`/admin/texts`, T-306) where you paste and publish them without a deploy. | P22§2-3, P35§6 |
 
 ## Before production
 

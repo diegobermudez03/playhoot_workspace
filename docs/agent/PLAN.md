@@ -86,7 +86,18 @@ Order as run: T-201 → T-202 → T-203 → T-204 → T-205 → T-206 → T-207.
 
 | Task | What | Tier | Size | State |
 |---|---|---|---|---|
-| T-300 | H3 design: email code, declared age and country, guest expiry, linking and recovery, profile, modes, account deletion; writes T-301… | A | L | pending |
+| T-300 | H3 design: email code, declared age and country, guest expiry, linking and recovery, profile, modes, account deletion; writes T-301… | A | L | done 2026-11-16 |
+| T-301 | Identity ways in: email-code sign-in, method linking and removal, recovery; the access-code email path | B | L | pending |
+| T-302 | Modes, language, profile data and entry gates: set-mode, interface language, my-data, name-change limit, market/age gates on create-game and join, admin texts endpoints | B | L | pending |
+| T-303 | Deletion and guest expiry: delete-account cleanup across domains, 90-day sweep, activity tracking | B | M | pending |
+| T-304 | Frontend: email code and acceptances on the sign-in screen, the contextual declaration screen | B | M | pending |
+| T-305 | Frontend: profile area, notifications page and preferences, teacher presentation, shell mode switch | B | L | pending |
+| T-306 | Admin panels: market matrix and acceptance texts | C | S | pending |
+| T-307 | H3 close: walkthrough, a11y/SEO/PWA re-verification, `verified`, GAPS rewrite; close the milestone | B | M | pending |
+
+Order: T-301 → T-302 → T-303 → T-304 → T-305 → T-306 → T-307. T-304 needs T-301 and T-302;
+T-306 needs T-302; T-303 can run any time after T-301. Design decisions in D-033…D-038 and
+V-09…V-12; the design is the `planned` site data (455 entities, validator at 0).
 
 ### H4 onwards
 

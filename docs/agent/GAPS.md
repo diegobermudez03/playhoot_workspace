@@ -22,24 +22,29 @@ None of the following existed at the snapshot: plans and payments, credits, budg
 | Metrics and alerts | 🔧 | They only write to the log (planned for delivery 2). Logical-outcome metrics per operation exist as a pattern. |
 | Analytics in DB | 🔧 | Ingestion verified in H1; only `game-created` and `session-started` are emitted. Other events arrive with their milestones; the panel is H10. |
 | Multiple instances | 🔧 | `ownership` is a marker; single instance. Acceptable for phase 1. |
-| Deletion of users and games | ➕ | `games.deleted_at` is never written; there is no account deletion. |
+| Deletion of users and games | 🔧 | Designed by T-300 (D-036): account and guest deletion with cross-domain cleanup is T-303; `games.deleted_at` gets its first writer there. Single-game withdrawal stays H4. |
 
 ## Identity and access
 
-| Topic | State | What is missing or changes |
-|---|---|---|
-| Guest, account, Google, local provider | ✅ | Google never tested against the real one (delivery 2). |
-| Guest upgrade without merging with existing accounts | ✅ | Matches P03§10. |
-| Email code | ➕ | P03§8. |
-| Guest expiry at 90 days | 🔧 | Today they do not expire. |
-| Declared age, country, market matrix | 🔧 | Core built (T-103): matrix seeded from P35, declarations, minority signals, acceptances, admin matrix. `check-market-access` is not yet called by create-game, join, subscribe or class flows (each milestone wires it, passing the approximate country from `api/geolocation`, whose local locator always answers unknown). No admin endpoint publishes acceptance texts yet; real texts are loaded before delivery 2 (P-23). |
-| Normal/teacher/student modes | ➕ | Only levels anonymous < guest < account. |
-| Per-class student identity with credential | ➕ | P03§2-7. |
-| Link methods, recovery, profile | ➕ | |
-| Administrator with second factor | ➕ | There is no platform role. |
-| Name change limit | ➕ | There is history, no limit. |
-| OAuth for AI (MCP) | 🔧 | Scope per **account** (`games`: all games). P10§1 requires authorization **per draft**. |
-| AI link (7 days, revocable) | 🔧 | Today it gives read and write. P10§2: the link only queries; writing requires separate authorization. |
+Rewritten by T-300 (16 Nov 2026), whose design covers this whole table: every open row is either an
+H3 task written on the board or explicitly assigned to a later milestone.
+
+| Topic | State | What is missing or changes | Owner |
+|---|---|---|---|
+| Guest, account, Google, local provider | ✅ | Google never tested against the real one. | Delivery 2 (`CREATOR_TODO.md` D-01) |
+| Guest upgrade without merging with existing accounts | ✅ | Matches P03§10; the email-code path reuses it. | — |
+| Email code | ➕ | Designed (D-033, `email-code-sign-in` flow). | **T-301** |
+| Guest expiry at 90 days | 🔧 | Designed (D-036): daily sweep into the deletion pipeline; activity from session use. | **T-303** |
+| Declared age, country, market matrix | 🔧 | Core built (T-103). The entry wiring is designed (D-038): create-game gains the `create-games` gate, the join admission gains `interactive-use`, and the `declaration_required` outcome routes to the contextual declaration screen. Publish/subscribe/teach gates belong to the milestones that build those flows. Admin text publishing designed (D-037). | **T-302** (gates, texts endpoints), **T-304** (screen); H4/H6/H8 (their own gates) |
+| Normal/teacher/student modes | 🔧 | Designed (D-034): mode on the account, carried by the token, switch is identity-only; teacher shows the honest presentation until H8. Student identity is H8's, with identity's obligations to it fixed in D-034. | **T-302**, **T-305**; H8 (student, teacher dashboard) |
+| Per-class student identity with credential | ➕ | P03§2-7. Identity's contract for it is written down (D-034); the build is the classroom milestone's. | H8 |
+| Link methods, recovery, profile | ➕ | Designed (D-035, `my-data` flow, profile screens). | **T-301** (backend), **T-305** (screens) |
+| Account deletion | ➕ | Designed (D-036, `delete-account` flow): immediate withdrawal, queued cleanup over game, play.session and notifications; compliance evidence kept restricted. | **T-303** (backend), **T-305** (screen); H5/H6/H8 append their cleanup steps; H11 (privacy requests, backups) |
+| Administrator with second factor | ✅ | Built and verified in H1 (T-102, D-015); admin web in H2 (T-206). This row was stale. | — |
+| Name change limit | 🔧 | Designed: 3 per rolling 30 days over the existing history (V-10). | **T-302** |
+| Interface language on the account | ➕ | Designed (D-034/D-022): stored by identity, read at email send time. | **T-302** |
+| OAuth for AI (MCP) | 🔧 | Scope per **account** (`games`: all games). P10§1 requires authorization **per draft**. | H7 |
+| AI link (7 days, revocable) | 🔧 | Today it gives read and write. P10§2: the link only queries; writing requires separate authorization. | H7 |
 
 ## Games, versions and publication
 

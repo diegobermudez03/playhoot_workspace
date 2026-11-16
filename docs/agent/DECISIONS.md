@@ -214,6 +214,114 @@ The H2 close checked D-019 as a behaviour and found two things the code did not 
   admin screens name themselves; the screens whose presentation later milestones redo get the
   fallback and their own title with that work.
 
+**D-033 · Email-code sign-in (T-300).**
+P03§8 wants the visible alternative to Google: type the email, receive a one-time code, type it to
+enter or finish registering. The design, all planned:
+- **Identity owns the attempt** (`identity_email_codes` + its events table): normalized address,
+  intent (sign-in or link), the SHA-256 of the 6-digit code — the code itself exists only in the
+  email — an optional guest to upgrade, and a 10-minute, 5-wrong-codes, one-live-attempt-per-address
+  life (V-09).
+- **The email rides the existing notification path.** Starting an attempt enqueues a `notify` task
+  on the identity queue, type `access-code` (the type D-018 already carved out: in_app false,
+  necessary email, skeleton cleared once the email is decided), with the **attempt itself as the
+  recipient** — a second special recipient besides `admin`. `identity.read-contact` resolves it to
+  the attempt's address and requested language, so notifications never stores an address and a code
+  can reach a person who has no user row yet.
+- **A user is created only at completion.** Completing resolves (issuer `email`, subject address)
+  exactly like a provider callback: existing user signs in, a guest passed at start upgrades keeping
+  identity and history (P03§10), otherwise a new account is born. An unverified address never
+  creates a user.
+- **Nothing reveals whether an address has an account**: start always answers the same neutral
+  acknowledgement, rate refusals included; a lost email is recovered by asking for a new code
+  (P31§3), never by a resend of the same one.
+
+**D-034 · Modes are identity state; nothing rides the token but the mode (T-300).**
+P03§9 makes normal and teacher the same account with a visible switch.
+- `identity_accounts` gains `mode` (normal | teacher), remembered across sign-ins;
+  `identity.set-mode` answers a fresh access token carrying it. The planned `switch-mode` flow is
+  **retired**: P15§5 already forbids entitlements riding a token, so there is nothing to confirm
+  with `plan` at switch time — operations verify entitlements when called, and `my-data` is where
+  the frontend learns what a mode has behind it.
+- A teacher without a plan sees the honest presentation (`/teacher`, D-029 style: what teaching
+  will be, H8; plans arrive with H6, said plainly). Guests are always normal. The access-level
+  ladder (anonymous < guest < account < admin) is untouched; mode gates nothing in H3.
+- **What identity owes the student identity (H8), decided now** so this design is not reopened: the
+  per-class student credential is a minting-and-resolution concern like resource links — identity
+  will mint, resolve and revoke it and issue class-scoped student tokens that carry no account;
+  classroom owns membership and approval; and leaving student mode never reopens the adult's
+  session, because the adult credential is a separate session student mode never holds — recovering
+  it means signing in again (P03§7). Nothing in H3's tables blocks that shape.
+
+**D-035 · Linking methods and recovery (T-300).**
+P03§11-12: add a method by proving control of both sides; an email match never merges; recovery is
+signing in through any linked method.
+- Linking an email reuses the email-code attempt with intent `link` bound to the calling account;
+  linking a provider reuses the login-attempt machinery with intent `link` — completion links
+  instead of opening a session. A method already on another user answers `method_in_use`, never a
+  merge; re-linking one the account already has is idempotent.
+- Methods are listed and removed from the profile; the last method cannot be removed (the account
+  must stay reachable), and removal is write-once (`removed_at` on
+  `identity_external_identities`, which thereby stops being history-exempt; its UNIQUE on
+  (issuer, subject) becomes partial while not removed).
+- There is **no separate recovery machinery**: email-code sign-in *is* the recovery P03§12
+  describes, and the profile is where a person adds it beforehand — the methods screen says so.
+
+**D-036 · Deletion and expiry share one pipeline (T-300).**
+P02§9-11: deleting an identity — guest or account — withdraws access immediately, erases within
+30/90 days, and never breaks shared history.
+- `identity.delete-user` is synchronous: sessions deactivated, methods removed, resource links and
+  grants revoked, display name cleared, `deleted_at` set — then one `account-cleanup` task on the
+  identity queue (keyed by the user uuid) carries the rest. The uuid keeps resolving, to a neutral
+  deleted reference, so shared history stays playable and distinguishable (P02§10).
+- The orchestrated cleanup covers what exists today: `game.delete-user-games` (finally writes
+  `games.deleted_at`; existing Sessions and other people's history untouched, P04§6),
+  `play.session.anonymize-user` (clears roster display-name snapshots; participant ids keep deleted
+  participants distinguishable), `notifications.delete-user-entries` (entries and preferences;
+  address-keyed suppressions stay because they protect the address). H5 (replay content), H6
+  (billing) and H8 (classroom) append their steps.
+- **Compliance evidence is the P02§11 exception**: declarations, acceptances and minority signals
+  stay, restricted, with their retention resolved by H11's privacy-request design. **Analytics
+  events stay but become unlinkable** — identity deletion removes the only resolution of the uuid;
+  H11 revisits whether residual purging is needed.
+- **Guest expiry is the same pipeline on a timer**: `identity.expire-guests` runs daily, measures
+  inactivity from `identity_sessions.last_used_at` (written by refresh at most once a day) and
+  feeds 90-day-inactive guests into `delete-user`. No warning email — a guest has no address — so
+  the term is disclosed where the guest is created (auth screen, P02§9) and again in the profile.
+
+**D-037 · What a person accepts, and when (T-300).**
+P22§3 wants distinguishable, recorded acceptances; C-01 forbids asking a guest anything but a name.
+- **Terms and own-data processing are recorded at registration**: when a sign-in completes and the
+  signed-in account has no standing acceptance of the current version of either text (the texts
+  endpoint already answers that), the contextual sign-in screen inserts one acceptance step naming
+  both texts with links and records each kind at its exact version. A returning account meets the
+  same step only when a text version changed. Guests are never asked; the screen's footer links the
+  texts for everyone. "Distinguishable" is satisfied by the records — one per kind and version —
+  not by ceremony.
+- **Marketing lives where its effect is**: the notification-preferences screen's marketing toggle
+  records the acceptance or withdrawal of the marketing text, which is exactly what the delivery
+  flow already checks (D-018).
+- **The texts become publishable from admin** (`compliance.admin-list-texts` /
+  `admin-publish-text`, panel `admin-texts`), so the creator loads the real ones (P-23) without a
+  deploy. Versions stay immutable and append-only; recorded acceptances keep pointing at the exact
+  version accepted.
+
+**D-038 · Entry gates ask for the declaration the way D-030 asks for an account (T-300).**
+P19/P35: adult functions need the declared residence and age; interactive entry is territorially
+controlled.
+- A gated flow answers **`declaration_required`** (with the function kind) instead of performing;
+  the frontend sends the person to `/declaration?function={kind}&next={path}` — the same
+  address-is-the-input pattern as the sign-in screen — which records the declaration and returns to
+  `next` with everything typed still there. A blocked market answers a service-restriction notice,
+  never legal wording (D-016). Answering below the threshold records the binding minority signal
+  and the function stays restricted; corrections go through support (P19§3).
+- **H3 wires the two entries that exist**: `create-game` gains a first step
+  `compliance.check-market-access` (function `create-games`), and the session-join admission gains
+  the `interactive-use` check — for a guest with the approximate country only (C-01; the local
+  locator answers unknown, so the gate is live but open in development). H4–H6/H8 wire publish,
+  subscribe and teach as those flows arrive.
+- The place resolution is T-103's unchanged: declared residence, else approximate country;
+  discrepancies recorded, never blocking (P35§5).
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
@@ -228,3 +336,7 @@ Operational values the specification does not fix (anti-abuse windows, page size
 | V-05 | Queue worker: poll every 2 s, claim 10 tasks per batch, 5 min lease (also the handler timeout); admin sees the newest 100 dead tasks per domain queue. Identity grant sweep: hourly, deletes grants expired more than 1 day ago, 500 per statement | B: principles |
 | V-07 | Notifications defaults: optional email groups start with AI and capacity off, Discovery review on, marketing off; an email whose recipient's language is unknown is written in English (as compliance texts); delivery records expire hourly in batches of 500 | P31§4-5 |
 | V-08 | PWA install hint: shown once after the second visit on a distinct day, dismissible forever; installing stays available from the shell menu | P01§5 |
+| V-09 | Email codes: 6 digits, 10 min, one live attempt per address (a new one supersedes it), 5 wrong codes exhaust it; sends 3/15 min and 10/day per address and 30/h per client IP; completion tries 10/min per IP | P03§8, P31§3 |
+| V-10 | Display-name changes: 3 per rolling 30 days, guests and accounts alike; the existing change history is the counter | B: identity |
+| V-11 | Guest expiry: daily sweep on the identity queue, batches of 500; activity = session use, written at most once per day per session | P02§9 |
+| V-12 | Account cleanup: standard queue retries (V-02); a dead cleanup task is an admin alert; targets stay 30 days in active systems, 90 in backups | P02§11 |
