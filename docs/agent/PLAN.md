@@ -67,8 +67,21 @@ Order: T-001 → T-003 → T-002 → T-004 → T-005. H0 is closed.
 
 **H1 closed 2026-11-15** in 9 tasks (estimate 10–12): the walkthrough `playhoot/walkthrough_h1_test.go` runs with the repo tests; what remains on purpose is listed in `GAPS.md` "H1 close". The overall estimate (120–160 sessions) stands.
 
-### H2 onwards
+### H2 — Frontend base and visual identity
 
-Each milestone starts with `T-N00` (design, tier A) which writes its tasks here.
+| Task | What | Tier | Size | State |
+|---|---|---|---|---|
+| T-200 | H2 design: C-03 renders and recommendation, D-019…D-023, planned screens, this board | A | L | done 2026-11-15 |
+| T-201 | Rendering and SEO base: React Router framework mode, SSR/prerender, metadata, locale paths, robots/sitemap | B | M | pending |
+| T-202 | PWA base: manifest, service worker, offline page, update notice, install offer | B | S | pending |
+| T-203 | Design system from the chosen direction: tokens, fonts, core components, gallery | B | L | **blocked: C-03** |
+| T-204 | App shell and public home: fixed bar, mode switch, language, notifications badge/panel, home | B | M | pending |
+| T-205 | Contextual authentication: one screen with reason, minimum account type and return | B | M | pending |
+| T-206 | Admin web base: admin sign-in + TOTP enrollment, shell, queues/DLQ, budget, email panels | B | L | pending |
+| T-207 | H2 close: AA, SEO and PWA verification; `verified`; GAPS rewrite; close the milestone | B | M | pending |
 
-H2 note (confirmed at H1 close): next is **T-200**, the H2 design (tier A). It includes C-03: the agent renders 2–3 visual directions on real screens and recommends one; the creator picks. H2 can alternate with H3 backend work if the creator's answer to C-03 is pending.
+Order: T-201 → T-202 → T-204 → T-205 → T-206 → T-207, with T-203 slotted in as soon as C-03 is answered (before T-204 ideally; T-204–T-206 build on neutral token values if it is still pending — D-021). T-207 cannot close H2 without T-203. 8 tasks against the 8–10 estimate.
+
+### H3 onwards
+
+Each milestone starts with `T-N00` (design, tier A) which writes its tasks here. If C-03 stays unanswered after T-202/T-204…T-206 are done, H3's design (T-300, tier A) can start in parallel per the H2 note at H1 close.

@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direction A — Ink &amp; Sticker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ============ Direction A: Ink & Sticker ============
+     Warm paper canvas, near-black ink, flat accent fills,
+     2px ink outlines and hard offset shadows (no blur).
+     Everything reads like stickers on a game board. */
+  :root {
+    --paper: #FAF6EF;
+    --paper-2: #F3EDE2;
+    --ink: #23201C;
+    --ink-soft: #5C564D;
+    --coral: #F4573C;
+    --marigold: #FFC43D;
+    --teal: #2BC4A9;
+    --lilac: #C9B8F0;
+    --sky: #9BD9F2;
+    --card: #FFFFFF;
+    --shadow: 4px 4px 0 var(--ink);
+    --shadow-sm: 2px 2px 0 var(--ink);
+    --radius: 14px;
+    --radius-lg: 22px;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: #E9E2D4;
+    color: var(--ink);
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    line-height: 1.5;
+  }
+  h1, h2, h3, .display { font-family: 'Fredoka', 'Nunito', sans-serif; }
+
+  /* ---- review chrome (not part of the design) ---- */
+  .meta { max-width: 1240px; margin: 0 auto; padding: 40px 20px 8px; }
+  .meta h1 { font-size: 2rem; }
+  .meta p { max-width: 70ch; color: #4a443b; margin-top: 8px; }
+  .meta .chips { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .meta .chip { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px 4px 6px; font-weight: 700; font-size: .85rem; box-shadow: var(--shadow-sm); }
+  .meta .chip i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--ink); display: inline-block; }
+  .frame-label { max-width: 1240px; margin: 36px auto 10px; padding: 0 20px; font-family: 'Fredoka'; font-size: 1.1rem; color: #4a443b; }
+  .frame { max-width: 1240px; margin: 0 auto; border: 2px solid var(--ink); border-radius: 18px; overflow: hidden; box-shadow: 6px 6px 0 rgba(35,32,28,.9); background: var(--paper); }
+  .back { display: inline-block; margin: 28px 20px 60px; font-weight: 800; color: var(--ink); }
+
+  /* ================= shared app pieces ================= */
+  .topbar {
+    display: flex; align-items: center; gap: 20px;
+    padding: 14px 28px; background: var(--paper);
+    border-bottom: 2px solid var(--ink);
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: 'Fredoka'; font-weight: 700; font-size: 1.35rem; letter-spacing: .01em; }
+  .logo .mark { width: 34px; height: 34px; background: var(--marigold); border: 2px solid var(--ink); border-radius: 10px; box-shadow: var(--shadow-sm); display: grid; place-items: center; font-size: 1.05rem; transform: rotate(-6deg); }
+  .nav { display: flex; gap: 4px; margin-left: 8px; }
+  .nav a { padding: 8px 14px; border-radius: 10px; color: var(--ink); text-decoration: none; font-weight: 800; font-size: .95rem; }
+  .nav a:hover { background: var(--paper-2); }
+  .nav a.active { background: var(--ink); color: var(--paper); }
+  .spacer { flex: 1; }
+  .lang { border: 2px solid var(--ink); background: #fff; border-radius: 10px; padding: 7px 12px; font-weight: 800; font-size: .85rem; box-shadow: var(--shadow-sm); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    border: 2px solid var(--ink); border-radius: 12px; padding: 10px 18px;
+    font-family: 'Nunito'; font-weight: 800; font-size: .95rem; color: var(--ink);
+    background: #fff; box-shadow: var(--shadow-sm);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+  .btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 var(--ink); }
+  .btn.primary { background: var(--coral); }
+  .btn.sun { background: var(--marigold); }
+  .btn.teal { background: var(--teal); }
+  .btn.ghost { box-shadow: none; border-color: transparent; }
+  .btn.ghost:hover { border-color: var(--ink); }
+  .btn.big { font-size: 1.1rem; padding: 14px 26px; border-radius: 14px; box-shadow: var(--shadow); }
+  .btn.big:active { box-shadow: 0 0 0 var(--ink); }
+
+  .modeswitch { display: flex; border: 2px solid var(--ink); border-radius: 999px; overflow: hidden; background: #fff; box-shadow: var(--shadow-sm); }
+  .modeswitch span { padding: 7px 14px; font-weight: 800; font-size: .85rem; }
+  .modeswitch .on { background: var(--lilac); border-right: 2px solid var(--ink); }
+  .modeswitch span:first-child { border-right: 2px solid var(--ink); }
+
+  .avatar { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ink); background: var(--sky); display: grid; place-items: center; font-weight: 800; font-size: .8rem; }
+
+  /* ================= home ================= */
+  .hero { display: grid; grid-template-columns: 1.15fr .85fr; gap: 24px; padding: 56px 48px 40px; align-items: center; }
+  .kicker { display: inline-block; background: var(--lilac); border: 2px solid var(--ink); border-radius: 999px; padding: 4px 14px; font-weight: 800; font-size: .8rem; box-shadow: var(--shadow-sm); transform: rotate(-1.5deg); }
+  .hero h2 { font-size: 3.4rem; line-height: 1.04; margin: 18px 0 14px; font-weight: 700; }
+  .hero h2 .u { position: relative; white-space: nowrap; }
+  .hero h2 .u::after { content: ""; position: absolute; left: 0; right: 0; bottom: 6px; height: 14px; background: var(--marigold); z-index: -1; transform: rotate(-1deg); }
+  .hero p { font-size: 1.1rem; color: var(--ink-soft); max-width: 48ch; }
+  .joinrow { display: flex; gap: 12px; margin-top: 26px; }
+  .joinrow input {
+    font: 800 1.3rem 'Fredoka'; letter-spacing: .35em; text-transform: uppercase;
+    width: 240px; padding: 12px 18px; border: 2px solid var(--ink); border-radius: 14px;
+    background: #fff; box-shadow: inset 2px 2px 0 rgba(35,32,28,.08);
+  }
+  .joinrow input::placeholder { color: #B9B1A4; letter-spacing: .25em; }
+  .herolinks { margin-top: 16px; font-weight: 700; color: var(--ink-soft); font-size: .95rem; }
+  .herolinks a { color: var(--ink); }
+
+  .stage { position: relative; height: 360px; }
+  .sticker-card { position: absolute; border: 2px solid var(--ink); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); padding: 12px 16px; font-weight: 800; }
+  .sc1 { top: 8px; left: 12px; background: var(--teal); transform: rotate(-4deg); }
+  .sc2 { bottom: 24px; right: 0; background: var(--marigold); transform: rotate(3deg); }
+  .sc2 small, .sc1 small { display: block; font-weight: 700; font-size: .75rem; }
+
+  /* the mascot (stand-in for the animated vector cat) */
+  .cat { position: absolute; left: 50%; top: 52%; transform: translate(-50%,-50%); }
+  .cat svg { display: block; animation: bob 3.2s ease-in-out infinite; }
+  .cat .eye { animation: blink 4.5s infinite; transform-origin: center; }
+  .cat .tail { transform-origin: 150px 196px; animation: tail 3.2s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 95%, 97% { transform: scaleY(.08); } }
+  @keyframes tail { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(14deg); } }
+  @media (prefers-reduced-motion: reduce) { .cat svg, .cat .eye, .cat .tail, .joining i { animation: none !important; } }
+
+  .section { padding: 26px 48px 44px; }
+  .section > header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 18px; }
+  .section h3 { font-size: 1.5rem; }
+  .section header a { margin-left: auto; font-weight: 800; color: var(--ink); font-size: .9rem; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .game { background: #fff; border: 2px solid var(--ink); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); transition: transform .1s ease; }
+  .game:hover { transform: translate(-2px,-2px) rotate(-.4deg); }
+  .cover { height: 108px; border-bottom: 2px solid var(--ink); display: grid; place-items: center; font-family: 'Fredoka'; font-size: 2rem; }
+  .game .body { padding: 12px 14px 14px; }
+  .game h4 { font-family: 'Fredoka'; font-size: 1.05rem; }
+  .game .tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .tag { font-size: .72rem; font-weight: 800; border: 2px solid var(--ink); border-radius: 999px; padding: 1px 9px; background: var(--paper); }
+  .tag.cat { background: var(--sky); }
+
+  .teachband { margin: 10px 48px 48px; border: 2px solid var(--ink); border-radius: var(--radius-lg); background: var(--lilac); box-shadow: var(--shadow); padding: 28px 32px; display: flex; align-items: center; gap: 28px; }
+  .teachband h3 { font-size: 1.6rem; margin-bottom: 6px; }
+  .teachband p { max-width: 52ch; font-weight: 600; }
+  .teachband .btn { background: #fff; margin-left: auto; flex-shrink: 0; }
+
+  /* ================= lobby ================= */
+  .lobby { display: grid; grid-template-columns: 340px 1fr; gap: 0; min-height: 560px; }
+  .lobby-side { border-right: 2px solid var(--ink); background: var(--paper-2); padding: 28px; display: flex; flex-direction: column; gap: 18px; }
+  .codecard { background: #fff; border: 2px solid var(--ink); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 20px; text-align: center; }
+  .codecard small { font-weight: 800; letter-spacing: .12em; color: var(--ink-soft); font-size: .72rem; }
+  .codecard .code { font-family: 'Fredoka'; font-size: 2.6rem; letter-spacing: .18em; margin: 6px 0 10px; }
+  .qr { width: 104px; height: 104px; margin: 4px auto 10px; border: 2px solid var(--ink); border-radius: 10px; background:
+    repeating-linear-gradient(0deg, var(--ink) 0 6px, transparent 6px 12px),
+    repeating-linear-gradient(90deg, var(--ink) 0 6px, #fff 6px 12px); opacity: .85; }
+  .linkrow { display: flex; gap: 8px; }
+  .linkrow input { flex: 1; min-width: 0; border: 2px solid var(--ink); border-radius: 10px; padding: 8px 10px; font: 700 .8rem 'Nunito'; background: #fff; color: var(--ink-soft); }
+  .hostbox { background: #fff; border: 2px solid var(--ink); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 18px 20px; }
+  .hostbox h4 { font-family: 'Fredoka'; margin-bottom: 10px; }
+  .choice { display: flex; flex-direction: column; gap: 8px; }
+  .choice label { display: flex; gap: 10px; align-items: center; border: 2px solid var(--ink); border-radius: 12px; padding: 9px 12px; font-weight: 800; font-size: .9rem; background: var(--paper); }
+  .choice label.on { background: var(--marigold); box-shadow: var(--shadow-sm); }
+  .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink); background: #fff; }
+  .choice .on .dot { background: var(--ink); box-shadow: inset 0 0 0 3px var(--marigold); }
+  .lobby-main { padding: 28px 32px; }
+  .lobby-main header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .lobby-main h2 { font-size: 1.9rem; }
+  .pill { border: 2px solid var(--ink); background: var(--teal); border-radius: 999px; padding: 4px 12px; font-weight: 800; font-size: .8rem; box-shadow: var(--shadow-sm); }
+  .meta-line { color: var(--ink-soft); font-weight: 700; font-size: .9rem; margin-left: auto; }
+  .players { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .player { display: flex; align-items: center; gap: 10px; border: 2px solid var(--ink); border-radius: 14px; background: #fff; box-shadow: var(--shadow-sm); padding: 10px 14px; font-weight: 800; animation: pop .25s ease backwards; }
+  .player:nth-child(2) { animation-delay: .04s; } .player:nth-child(3) { animation-delay: .08s; }
+  .player:nth-child(4) { animation-delay: .12s; } .player:nth-child(5) { animation-delay: .16s; }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } }
+  .player .avatar { flex-shrink: 0; }
+  .joining { border-style: dashed; color: var(--ink-soft); background: var(--paper); box-shadow: none; }
+  .joining i { font-style: normal; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .lobby-actions { display: flex; gap: 14px; margin-top: 26px; align-items: center; }
+  .lobby-actions .right { margin-left: auto; display: flex; gap: 10px; }
+
+  /* ================= teacher dashboard ================= */
+  .tdash { padding: 32px 48px 48px; background: var(--paper); }
+  .tdash .headline { display: flex; align-items: center; gap: 18px; margin-bottom: 24px; }
+  .tdash h2 { font-size: 2rem; }
+  .stats { display: flex; gap: 14px; margin-left: auto; }
+  .stat { border: 2px solid var(--ink); background: #fff; border-radius: 14px; box-shadow: var(--shadow-sm); padding: 10px 16px; text-align: center; }
+  .stat b { font-family: 'Fredoka'; font-size: 1.3rem; display: block; }
+  .stat small { font-weight: 800; font-size: .7rem; letter-spacing: .08em; color: var(--ink-soft); }
+  .tgrid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .classes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .classcard { border: 2px solid var(--ink); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow); padding: 20px; }
+  .classcard .band { height: 10px; border: 2px solid var(--ink); border-radius: 999px; margin-bottom: 14px; }
+  .classcard h4 { font-family: 'Fredoka'; font-size: 1.15rem; }
+  .classcard p { color: var(--ink-soft); font-weight: 700; font-size: .88rem; margin: 4px 0 14px; }
+  .classcard .row { display: flex; gap: 8px; }
+  .newclass { border: 2px dashed var(--ink); border-radius: var(--radius-lg); display: grid; place-items: center; font-weight: 800; color: var(--ink-soft); background: transparent; min-height: 150px; }
+  .sidepanel { display: flex; flex-direction: column; gap: 16px; }
+  .quick { border: 2px solid var(--ink); border-radius: var(--radius-lg); background: var(--marigold); box-shadow: var(--shadow); padding: 20px; }
+  .quick h4 { font-family: 'Fredoka'; margin-bottom: 6px; }
+  .quick p { font-weight: 700; font-size: .9rem; margin-bottom: 14px; }
+  .activity { border: 2px solid var(--ink); border-radius: var(--radius-lg); background: #fff; box-shadow: var(--shadow); padding: 18px 20px; }
+  .activity h4 { font-family: 'Fredoka'; margin-bottom: 10px; }
+  .activity ul { list-style: none; display: flex; flex-direction: column; }
+  .activity li { display: flex; gap: 10px; padding: 9px 0; border-top: 2px dotted #D8D0C2; font-weight: 700; font-size: .88rem; align-items: baseline; }
+  .activity li:first-of-type { border-top: 0; }
+  .activity li small { margin-left: auto; color: var(--ink-soft); white-space: nowrap; }
+  .activity .k { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--ink); flex-shrink: 0; align-self: center; }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <h1>Direction A — Ink &amp; Sticker</h1>
+  <p><strong>Thesis:</strong> a tabletop-game box brought to the screen. Warm paper, honest near-black ink, flat
+    accent colors, visible 2&nbsp;px outlines and hard offset shadows. Buttons physically press down, cards tilt like
+    stickers, the mascot is a flat vector cat with Lottie-style blinks and tail swings. It is deliberately drawn —
+    the opposite of gradient-and-glass AI defaults — and the ink-on-paper base makes WCAG AA contrast the default,
+    not a retrofit. Display type Fredoka, body Nunito (both OFL, self-hosted later).</p>
+  <div class="chips">
+    <span class="chip"><i style="background:#FAF6EF"></i>Paper #FAF6EF</span>
+    <span class="chip"><i style="background:#23201C"></i>Ink #23201C</span>
+    <span class="chip"><i style="background:#F4573C"></i>Coral #F4573C</span>
+    <span class="chip"><i style="background:#FFC43D"></i>Marigold #FFC43D</span>
+    <span class="chip"><i style="background:#2BC4A9"></i>Teal #2BC4A9</span>
+    <span class="chip"><i style="background:#C9B8F0"></i>Lilac #C9B8F0</span>
+    <span class="chip"><i style="background:#9BD9F2"></i>Sky #9BD9F2</span>
+  </div>
+</div>
+
+<div class="frame-label">1 · Public entry / home (desktop, landscape implementation)</div>
+<div class="frame">
+  <div class="topbar">
+    <div class="logo"><span class="mark">▶</span> Playhoot</div>
+    <nav class="nav">
+      <a class="active" href="#">Discover</a><a href="#">Join</a><a href="#">For teachers</a>
+    </nav>
+    <div class="spacer"></div>
+    <span class="lang">EN ▾</span>
+    <button class="btn ghost">Sign in</button>
+    <button class="btn primary">Create a game</button>
+  </div>
+
+  <div class="hero">
+    <div>
+      <span class="kicker">Live games for classes &amp; get-togethers</span>
+      <h2>Make the whole<br>room <span class="u">play</span>.</h2>
+      <p>Create a game with AI, share a code, and everyone plays live from their own
+         browser — in class, at work, or on the couch. No installs, no accounts needed to join.</p>
+      <div class="joinrow">
+        <input placeholder="GAME CODE" aria-label="Game code">
+        <button class="btn sun big">Join</button>
+      </div>
+      <p class="herolinks">or <a href="#">browse games</a> · <a href="#">teach with Playhoot</a></p>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="sticker-card sc1">Quiz night<br><small>12 playing now</small></div>
+      <div class="cat">
+        <svg width="230" height="250" viewBox="0 0 230 250">
+          <!-- tail -->
+          <path class="tail" d="M150 196 q46 10 44 -34" fill="none" stroke="#23201C" stroke-width="12" stroke-linecap="round"/>
+          <path class="tail" d="M150 196 q46 10 44 -34" fill="none" stroke="#FFC43D" stroke-width="7" stroke-linecap="round"/>
+          <!-- body -->
+          <ellipse cx="112" cy="190" rx="62" ry="48" fill="#FFC43D" stroke="#23201C" stroke-width="5"/>
+          <ellipse cx="112" cy="206" rx="30" ry="22" fill="#FAF6EF" stroke="#23201C" stroke-width="4"/>
+          <!-- ears -->
+          <path d="M58 70 L48 24 L92 46 Z" fill="#FFC43D" stroke="#23201C" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M166 70 L176 24 L132 46 Z" fill="#FFC43D" stroke="#23201C" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M62 60 L57 37 L80 49 Z" fill="#F4573C"/>
+          <path d="M162 60 L167 37 L144 49 Z" fill="#F4573C"/>
+          <!-- head -->
+          <ellipse cx="112" cy="102" rx="68" ry="58" fill="#FFC43D" stroke="#23201C" stroke-width="5"/>
+          <!-- eyes -->
+          <g class="eye"><circle cx="88" cy="96" r="11" fill="#23201C"/><circle cx="92" cy="92" r="3.6" fill="#fff"/></g>
+          <g class="eye"><circle cx="138" cy="96" r="11" fill="#23201C"/><circle cx="142" cy="92" r="3.6" fill="#fff"/></g>
+          <!-- muzzle -->
+          <path d="M106 116 q6 7 12 0" fill="none" stroke="#23201C" stroke-width="4" stroke-linecap="round"/>
+          <path d="M112 112 l0 5" stroke="#23201C" stroke-width="4" stroke-linecap="round"/>
+          <path d="M107 108 q5 -5 10 0 q-5 6 -10 0" fill="#F4573C" stroke="#23201C" stroke-width="3.5" stroke-linejoin="round"/>
+          <!-- whiskers -->
+          <path d="M40 100 l26 2 M42 114 l25 -4" stroke="#23201C" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M184 100 l-26 2 M182 114 l-25 -4" stroke="#23201C" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- paws -->
+          <ellipse cx="86" cy="232" rx="17" ry="11" fill="#FFC43D" stroke="#23201C" stroke-width="4.5"/>
+          <ellipse cx="138" cy="232" rx="17" ry="11" fill="#FFC43D" stroke="#23201C" stroke-width="4.5"/>
+        </svg>
+      </div>
+      <div class="sticker-card sc2">Fractions Sprint<br><small>Math · grades ready</small></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <header><h3>Popular right now</h3><a href="#">See all games →</a></header>
+    <div class="cards">
+      <article class="game"><div class="cover" style="background:var(--sky)">Cc</div><div class="body"><h4>Capital Cities Dash</h4><div class="tags"><span class="tag cat">Geography</span><span class="tag">2–50 players</span></div></div></article>
+      <article class="game"><div class="cover" style="background:var(--marigold)">¾</div><div class="body"><h4>Fractions Sprint</h4><div class="tags"><span class="tag cat">Math</span><span class="tag">Grades</span></div></div></article>
+      <article class="game"><div class="cover" style="background:var(--teal)">“…”</div><div class="body"><h4>Guess the Movie Line</h4><div class="tags"><span class="tag cat">Party</span><span class="tag">2–100 players</span></div></div></article>
+      <article class="game"><div class="cover" style="background:var(--lilac)">Rx</div><div class="body"><h4>Lab Safety Escape</h4><div class="tags"><span class="tag cat">Science</span><span class="tag">Template</span></div></div></article>
+    </div>
+  </div>
+
+  <div class="teachband">
+    <div>
+      <h3>Playhoot for teachers</h3>
+      <p>Classes, activities and grades built in. Turn your own material into games
+         your students actually want to replay.</p>
+    </div>
+    <button class="btn big">Try Teacher free for 7 days</button>
+  </div>
+</div>
+
+<div class="frame-label">2 · Session lobby, host directing (desktop)</div>
+<div class="frame">
+  <div class="topbar">
+    <div class="logo"><span class="mark">▶</span> Playhoot</div>
+    <div class="spacer"></div>
+    <span class="pill" style="background:var(--marigold)">Lobby</span>
+    <span class="lang">EN ▾</span>
+    <div class="avatar" title="Dana">DA</div>
+  </div>
+  <div class="lobby">
+    <aside class="lobby-side">
+      <div class="codecard">
+        <small>JOIN AT PLAYHOOT · CODE</small>
+        <div class="code">XK42PM</div>
+        <div class="qr" role="img" aria-label="QR code to join"></div>
+        <div class="linkrow"><input value="playhoot.app/j/XK42PM" readonly><button class="btn">Copy</button></div>
+      </div>
+      <div class="hostbox">
+        <h4>You are the host</h4>
+        <div class="choice">
+          <label class="on"><span class="dot"></span> Direct without playing</label>
+          <label><span class="dot"></span> I’ll play too</label>
+        </div>
+      </div>
+      <div class="hostbox">
+        <h4>Admissions</h4>
+        <button class="btn" style="width:100%">Close admissions</button>
+      </div>
+    </aside>
+    <main class="lobby-main">
+      <header>
+        <h2>Capital Cities Dash</h2>
+        <span class="pill">12 players</span>
+        <span class="meta-line">up to 50 · lobby closes in 24 min</span>
+      </header>
+      <div class="players">
+        <div class="player"><span class="avatar" style="background:var(--marigold)">LU</span> Lucía</div>
+        <div class="player"><span class="avatar" style="background:var(--teal)">MA</span> Mateo</div>
+        <div class="player"><span class="avatar" style="background:var(--lilac)">SO</span> Sofi</div>
+        <div class="player"><span class="avatar" style="background:var(--sky)">JP</span> João Pedro</div>
+        <div class="player"><span class="avatar" style="background:var(--coral)">AN</span> Andrés</div>
+        <div class="player"><span class="avatar" style="background:var(--sky)">EM</span> Emma</div>
+        <div class="player"><span class="avatar" style="background:var(--marigold)">VA</span> Valentina</div>
+        <div class="player"><span class="avatar" style="background:var(--teal)">TO</span> Tomás</div>
+        <div class="player"><span class="avatar" style="background:var(--lilac)">CA</span> Cami</div>
+        <div class="player"><span class="avatar" style="background:var(--coral)">NI</span> Nico</div>
+        <div class="player"><span class="avatar" style="background:var(--sky)">IS</span> Isa</div>
+        <div class="player"><span class="avatar" style="background:var(--marigold)">DI</span> Diego</div>
+        <div class="player joining"><i>●</i> someone is joining…</div>
+      </div>
+      <div class="lobby-actions">
+        <button class="btn ghost">Cancel session</button>
+        <div class="right">
+          <button class="btn teal big">Start game</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="frame-label">3 · Teacher dashboard, teacher mode (desktop)</div>
+<div class="frame">
+  <div class="topbar">
+    <div class="logo"><span class="mark">▶</span> Playhoot</div>
+    <div class="modeswitch" role="group" aria-label="Mode"><span>Play</span><span class="on">Teacher</span><span>Student</span></div>
+    <div class="spacer"></div>
+    <span class="lang">ES ▾</span>
+    <button class="btn ghost">Alerts · 3</button>
+    <div class="avatar" title="Prof. Rivera" style="background:var(--lilac)">PR</div>
+  </div>
+  <div class="tdash">
+    <div class="headline">
+      <h2>Good morning, Prof. Rivera</h2>
+      <div class="stats">
+        <div class="stat"><b>3</b><small>CLASSES</small></div>
+        <div class="stat"><b>48</b><small>STUDENTS</small></div>
+        <div class="stat"><b>2</b><small>ACTIVITIES THIS WEEK</small></div>
+      </div>
+    </div>
+    <div class="tgrid">
+      <div class="classes">
+        <article class="classcard">
+          <div class="band" style="background:var(--teal)"></div>
+          <h4>Math 7B</h4>
+          <p>26 students · 2 activities · last played yesterday</p>
+          <div class="row"><button class="btn sun">Start activity</button><button class="btn">Open</button></div>
+        </article>
+        <article class="classcard">
+          <div class="band" style="background:var(--sky)"></div>
+          <h4>Science 8A</h4>
+          <p>22 students · 1 activity · 3 join requests</p>
+          <div class="row"><button class="btn sun">Start activity</button><button class="btn">Open</button></div>
+        </article>
+        <article class="classcard">
+          <div class="band" style="background:var(--coral)"></div>
+          <h4>Club de ajedrez</h4>
+          <p>Empty class · invite code ready</p>
+          <div class="row"><button class="btn">Invite students</button></div>
+        </article>
+        <button class="newclass">+ New class</button>
+      </div>
+      <aside class="sidepanel">
+        <div class="quick">
+          <h4>Start a class session</h4>
+          <p>Pick a game from your library and a class — the lobby does the rest.</p>
+          <button class="btn primary">Pick game &amp; class</button>
+        </div>
+        <div class="activity">
+          <h4>Recent</h4>
+          <ul>
+            <li><span class="k" style="background:var(--teal)"></span> Fractions Sprint · Math 7B — grades published <small>2 h ago</small></li>
+            <li><span class="k" style="background:var(--marigold)"></span> Lab Safety Escape · Science 8A — 19 played <small>yesterday</small></li>
+            <li><span class="k" style="background:var(--lilac)"></span> New join request · Science 8A <small>yesterday</small></li>
+            <li><span class="k" style="background:var(--sky)"></span> Capital Cities Dash added to library <small>2 days ago</small></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<a class="back" href="index.html">← Back to the comparison</a>
+</body>
+</html>
