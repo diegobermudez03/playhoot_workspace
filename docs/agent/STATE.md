@@ -1,16 +1,16 @@
 # State
 
-_Updated: 2026-11-15, closing of T-200 (H2 designed)._
+_Updated: 2026-11-15, closing of T-201 (rendering and SEO base)._
 
 ## Next task
 
-**T-201** · model **Opus** · effort **medium** · Rendering and SEO base (React Router framework mode, SSR/prerender, metadata, locale paths).
+**T-202** · model **Opus** · effort **medium** · PWA base (manifest, service worker, offline page, update notice, install offer).
 
-If the creator has answered **C-03** (see `DECISIONS.md`), **T-203** (design system) may run before or right after T-201 — it is the only blocked task and the rest of H2 builds on it best.
+If the creator has answered **C-03** (see `DECISIONS.md`), **T-203** (design system) may run before or right after T-202 — it is the only blocked task and the rest of H2 builds on it best.
 
 ## Current milestone
 
-H2 — Frontend base and visual identity. Designed by T-200 (board in `PLAN.md`): T-201 → T-202 → T-204 → T-205 → T-206 → T-207, with T-203 waiting on C-03.
+H2 — Frontend base and visual identity. Designed by T-200 (board in `PLAN.md`): T-201 (done) → T-202 → T-204 → T-205 → T-206 → T-207, with T-203 waiting on C-03.
 
 ## Open questions for the creator
 
@@ -18,6 +18,8 @@ H2 — Frontend base and visual identity. Designed by T-200 (board in `PLAN.md`)
 
 ## Notes for the next session
 
+- T-201 moved `apps/web` to React Router framework mode. The route table is `apps/web/src/routes.ts`; the document is `src/root.tsx`; a new screen that needs the browser goes under the pathless `app/ClientLayout.tsx` (nothing renders on the server there) and a public, server-rendered one goes in the language branches beside `routes/home.tsx`. Public paths carry the language (`/es`, `/en`, `/pt`): link to them with `useLocalePaths()`, never with a bare `/sign-in`. A public route describes itself with `publicMeta` (`src/seo/meta.ts`) and its texts live in the catalogs as `seo.*`. Build and run with `PLAYHOOT_SITE_URL` set; `npm run start -w @playhoot/web` runs `apps/web/server.js` (D-025).
+- Not verified by T-201: hydration and the existing flows in a real browser (no browser in that session). The first session that runs the app should open `/en`, join a session and open a game workspace before building on top.
 - T-200 decisions for H2 implementation: D-019 (rendering/SEO), D-020 (PWA), D-021 (tokens — neutral values until C-03, only values/skins change after), D-022 (i18n paths), D-023 (admin area), V-08 (install hint). The planned screens are the contract: `playhoot_frontend/docs/system/screens-shell.js` and `screens-admin.js`.
 - T-101 built `utils/txqueue` (D-014, V-05). A domain gets its queue with `registry.Queue(domain)` in `main`, creates its table with `txqueue.Migration` in its own migrations, and registers handlers there.
 - T-102 built the admin second factor (D-015). To become admin locally: sign in, read the UUID from `GET /v1/identity/me`, set `IDENTITY_ADMIN_USER_UUID`, restart, enroll at `POST /v1/identity/totp/enroll` + `/confirm`, then `POST /v1/identity/totp/verify` with purpose `admin_token` (admin endpoints) or `step_up` (proof for a sensitive action). Each new admin endpoint needs its own operation at level `admin` in Identity's catalog (as `MANAGE_QUEUES`); sensitive flows spend the proof with `orchestrator/stepup`.

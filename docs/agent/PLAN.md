@@ -72,7 +72,7 @@ Order: T-001 → T-003 → T-002 → T-004 → T-005. H0 is closed.
 | Task | What | Tier | Size | State |
 |---|---|---|---|---|
 | T-200 | H2 design: C-03 renders and recommendation, D-019…D-023, planned screens, this board | A | L | done 2026-11-15 |
-| T-201 | Rendering and SEO base: React Router framework mode, SSR/prerender, metadata, locale paths, robots/sitemap | B | M | pending |
+| T-201 | Rendering and SEO base: React Router framework mode, SSR/prerender, metadata, locale paths, robots/sitemap | B | M | done 2026-11-15 |
 | T-202 | PWA base: manifest, service worker, offline page, update notice, install offer | B | S | pending |
 | T-203 | Design system from the chosen direction: tokens, fonts, core components, gallery | B | L | **blocked: C-03** |
 | T-204 | App shell and public home: fixed bar, mode switch, language, notifications badge/panel, home | B | M | pending |
