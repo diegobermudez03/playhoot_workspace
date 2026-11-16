@@ -15,7 +15,8 @@ What only you can do, ordered by when it is needed. The agent keeps it current.
 |---|---|---|
 | P-10 | ~~Pick the visual direction among the ones the agent prepares (C-03).~~ **Done 2026-11-15: A — Ink & Sticker.** | H2 |
 | P-13 | Install the app on a real Android phone and a real iPhone and say whether it opens in its own window with the right name and icon (steps in the Result of `tasks/T-202.md`). The emulated check is done; only real devices can confirm it. | H2 close (T-207) |
-| P-14 | Provide the four real app icons (192, 512, maskable 512, apple-touch 180) to replace the generated placeholders; drop them at the paths in `playhoot_frontend/docs/design/ASSETS.md` and nothing in the code changes. | H2 close, does not block development |
+| P-14 | Provide the four real app icons (192, 512, maskable 512, apple-touch 180) to replace the generated placeholders; drop them at the paths in `playhoot_frontend/docs/design/ASSETS.md` and nothing in the code changes. T-203 redrew the placeholders in the chosen identity (a marigold sticker with the ink play triangle) so nothing of the retired owl ships, but they are still placeholders. | H2 close, does not block development |
+| P-15 | Decide the final mascot: either approve the placeholder cat T-203 drew in `Mascot.tsx` as the character, or provide the real one as a Lottie file at `/assets/mascot/mascot.json` (spec and prompt in `playhoot_frontend/docs/design/ASSETS.md`, asset `mascot.primary`). Every screen asks for the `Mascot` slot, so no screen changes either way. | H2 close, does not block development |
 | P-11 | Have Docker Desktop running when a task asks for it (local database and storage for tests). | From H1 |
 | P-12 | Provide the asset files that end up registered as pending in admin (characters, animations, sounds). | H12; does not block development |
 
