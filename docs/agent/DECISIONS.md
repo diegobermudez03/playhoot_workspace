@@ -139,6 +139,28 @@ with one sentence saying the catalog with its search, categories and tags arrive
 and that no activity figures are shown because there are none. No invented game, no invented
 author, no invented number. H4 replaces that section with the real thing.
 
+**D-030 · The authentication screen's input is its address (T-205).**
+B and P14§1 want one screen that receives the reason, the minimum account type that works and the
+destination to return to; the plan's path-navigation rule wants a copied address to reproduce the
+screen. Both are satisfied by putting the whole input in the URL of `/{language}/sign-in`:
+`reason` (a **kind** from a closed list the screen translates — never text written by the caller
+or the backend), `level` (`guest` when a guest suffices, an account otherwise), `use=account`
+(the person asked for the account options although a guest would do) and `next` (where to
+continue, which still carries everything already typed, so returning asks for nothing twice —
+WCAG 2.2 3.3.7).
+
+- **No second continuation mechanism.** `next` and the pending-login store that already carried it
+  across the trip to the provider are what the screen extends; nothing else is stored anywhere.
+- **The caller names the reason, the gate carries it.** `RequireOperation` and
+  `useNavigateToOperation` now take the reason beside the operation, and the backend's operation
+  catalog still decides the level. A reason this build does not know, or a level it does not know,
+  reads as the strictest answer: no reason and an account required.
+- **Both halves are one screen, not two routes.** Moving between the display-name field and the
+  account options only changes the address of the same route, so what was typed survives the move.
+- **The guest warning is a confirmation, not a paragraph.** P03§10 has consequences only when the
+  person actually leaves for a provider, so a guest is told there — before the app is left — that a
+  new account keeps their name and games while entering an existing account does not merge them.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
