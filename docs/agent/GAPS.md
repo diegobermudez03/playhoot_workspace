@@ -120,10 +120,10 @@ None of the following existed at the snapshot: plans and payments, credits, budg
 | i18n es/en/pt-BR with parity | ✅ | |
 | Path navigation | ✅ | |
 | Join, lobby, play, host, creation with external AI, my games, authentication | ✅ | Their presentation is redone. |
-| Visual identity | 🔧 | The current one ("game night", owl) is the one the creator rejects. It is redefined. |
+| Visual identity | 🔧 | The current one ("game night", owl) is the one the creator rejects. C-03 chose direction A (Ink & Sticker); T-203 replaces it. |
 | Two implementations per screen (horizontal/vertical) | 🔧 | Hybrid: some screens with variants, others with classes. |
 | SEO | ➕ | Pure SPA with no server rendering or per-route metadata. |
-| PWA | 🔧 | Manifest without icons or service worker. |
+| PWA | ✅ | T-202: manifest with placeholder icons, service worker, offline page, update notice and install offer; verified in a browser. Real icon art and the validation on real Android and iOS devices are still open (T-207, `CREATOR_TODO.md`). |
 | WCAG 2.2 AA | 🔧 | No verification. |
 | Everything else | ➕ | Home/Discovery, card, profile, history and replay, notifications, plans and purchases, teacher, student, support, admin, AI chat. |
 | Mobile app | — | Deferred by P01§5; `apps/mobile` is removed. |
