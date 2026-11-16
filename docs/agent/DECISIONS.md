@@ -110,6 +110,35 @@ D-021 fixed the structure of the tokens; T-203 filled it with direction A and ha
 - **The token rule is now enforced by a check, because ESLint does not read CSS.** The task brief and `AGENTS.md` both said lint enforced "no raw colours, durations or shadows in components"; it never did. `scripts/check-styles.mjs` (`npm run styles`, part of `npm run check`) scans every stylesheet outside the token files for a raw colour, a raw duration or a shadow with a blur radius. It found seven real violations in existing code on its first run, all now tokenised. One documented exception: the Google sign-in button, whose colours Google's branding guidelines fix.
 
 
+**D-028 · The shell is rendered above the router, and the services with it (T-204).**
+Until now every screen rendered its own `AppShell`, so each navigation rebuilt the top bar, and
+the app's services lived inside `ClientLayout`, so a server-rendered public page had no identity,
+no bell and no sound. T-204 moved both above the router (`root.tsx`): one `AppShell` around the
+`Outlet`, and a `ServicesBoundary` that hands the one set of services to everything once the page
+is interactive (null while the server renders, which the pieces that need the browser already
+handle). Three consequences worth writing down.
+- **A screen no longer wraps itself; it says how it wants to be framed** with `useShellMode`:
+  `normal`, `bare` (the page shows its own big logo), `immersive` (a game takes a landscape
+  display) or `plain` (no frame of ours). The admin area is recognised from the address instead,
+  so an admin page never shows the public bar even for the render before it could ask (D-023).
+- **The bar rearranges itself in CSS, not in JavaScript.** It is server-rendered before anything
+  is known about the display, and a bar that rearranged itself after hydration would move under
+  the reader's pointer. Below 360 px the mode switch moves into the bar's menu, and below 760 px
+  join, create, the language and the sound do.
+- **`/v1/identity/me` is not called per page.** The site data had the shell resolving identity
+  with it. Who the person is is already the credential the backend issued and the app renews
+  against it (`app-core`), so a call on every page would add nothing and cost one request per
+  navigation. The shell reads identity from that state; the site data now says so. The endpoint
+  stays for a screen that genuinely needs the backend's own answer.
+
+**D-029 · What the home page may claim before Discovery exists (T-204).**
+P14§2 forbids inventing activity to look like a bigger community, and H2 has no catalog, no
+approved content and no statistics. The home page therefore shows **kinds of game** Playhoot is
+made for — quizzes, word games, board games, party games — labelled plainly as our own selection,
+with one sentence saying the catalog with its search, categories and tags arrives with Discovery
+and that no activity figures are shown because there are none. No invented game, no invented
+author, no invented number. H4 replaces that section with the real thing.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:

@@ -150,4 +150,4 @@ The walkthrough `playhoot/walkthrough_h1_test.go` demonstrates H1 on the local d
 | Admin surface | Admin endpoints are covered by handler tests only; there is no admin web yet. | H2 (admin web base), H10 |
 | Alerts (P16§5) | Budget and dead-task alerts are log lines and in-app entries only. | Delivery 2 |
 | Real providers | Resend, SES and geolocation are simulated or local. | Delivery 2 (`CREATOR_TODO.md`) |
-
+| Local backend cannot be seeded | `game/internal/storage/migrations/seed.go` inserts its seed Games without `logo_image_url`, which a later migration made NOT NULL, so `go run .` stops at startup on a fresh database. Found while verifying T-204 against a live backend; T-204 verified the shell against stubbed answers instead. | The next backend task (one line in the seed row) |
