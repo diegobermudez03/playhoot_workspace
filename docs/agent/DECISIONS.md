@@ -322,6 +322,28 @@ controlled.
 - The place resolution is T-103's unchanged: declared residence, else approximate country;
   discrepancies recorded, never blocking (P35§5).
 
+**D-039 · Where the ways in live, and what building them corrected (T-301).**
+Implementing D-033/D-035 settled four things the design left to the code.
+- **Two workflows, one subject.** The email-code machinery is
+  `identity/workflows/emaillogin` (start, complete, and both link steps); provider linking lives in
+  `identity/workflows/accountlogin`, because it *is* the login-attempt machinery and a sibling
+  package cannot reach that package's `internal/repo`. Listing and removing are
+  `identity/usecases/signinmethods`. The site data keeps describing them as the operations
+  `identity.email-login` and `identity.link-method`: it documents operations, not packages.
+- **`identity_login_attempts` gained `intent` and `link_user_id`** (the design had marked only the
+  email table and `removed_at`). A link attempt's callback does the linking and issues the code
+  with what it decided (`linked` or `method_in_use`); the completion answers that and never opens a
+  session, and a sign-in completion refuses a link attempt. Exhaustion needs no column: an attempt
+  with five `wrong_code` events is simply no longer live.
+- **A method is named by its row identifier**, scoped to its owner on every call; it is not a
+  secret and the table has no uuid. The operation catalog gained `MANAGE_SIGN_IN_METHODS` at
+  account level, which the five `/v1/identity/me/methods*` endpoints require.
+- **Notifications learned that a recipient need not be a user.** `TypeSpec.ExternalRecipient`
+  (access code only) makes the entry keep no user — `notifications_entries.user_uuid` is now
+  nullable — while the email task still names the attempt Identity resolves. No other type changes.
+  The metric guard rose from 1000 to 4000 series: the per-route request counter grows with the API
+  and crossed the old ceiling with these eight endpoints.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:

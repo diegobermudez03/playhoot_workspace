@@ -33,12 +33,13 @@ H3 task written on the board or explicitly assigned to a later milestone.
 |---|---|---|---|
 | Guest, account, Google, local provider | ✅ | Google never tested against the real one. | Delivery 2 (`CREATOR_TODO.md` D-01) |
 | Guest upgrade without merging with existing accounts | ✅ | Matches P03§10; the email-code path reuses it. | — |
-| Email code | ➕ | Designed (D-033, `email-code-sign-in` flow). | **T-301** |
+| Email code | ✅ | Built (T-301): one-time code sign-in, registration and guest upgrade, with V-09's limits and the neutral acknowledgement. The code rides the existing notify path; identity resolves the attempt to its address. | — |
 | Guest expiry at 90 days | 🔧 | Designed (D-036): daily sweep into the deletion pipeline; activity from session use. | **T-303** |
 | Declared age, country, market matrix | 🔧 | Core built (T-103). The entry wiring is designed (D-038): create-game gains the `create-games` gate, the join admission gains `interactive-use`, and the `declaration_required` outcome routes to the contextual declaration screen. Publish/subscribe/teach gates belong to the milestones that build those flows. Admin text publishing designed (D-037). | **T-302** (gates, texts endpoints), **T-304** (screen); H4/H6/H8 (their own gates) |
 | Normal/teacher/student modes | 🔧 | Designed (D-034): mode on the account, carried by the token, switch is identity-only; teacher shows the honest presentation until H8. Student identity is H8's, with identity's obligations to it fixed in D-034. | **T-302**, **T-305**; H8 (student, teacher dashboard) |
 | Per-class student identity with credential | ➕ | P03§2-7. Identity's contract for it is written down (D-034); the build is the classroom milestone's. | H8 |
-| Link methods, recovery, profile | ➕ | Designed (D-035, `my-data` flow, profile screens). | **T-301** (backend), **T-305** (screens) |
+| Link methods, recovery | ✅ | Built (T-301): linking an address or a provider identity, `method_in_use` instead of merging, listing and removal with the last-method guard. Email-code sign-in is the recovery P03§12 describes. | — |
+| Profile and my-data | ➕ | Designed (D-035, `my-data` flow, profile screens); the methods it calls exist (T-301). | **T-302** (reads), **T-305** (screens) |
 | Account deletion | ➕ | Designed (D-036, `delete-account` flow): immediate withdrawal, queued cleanup over game, play.session and notifications; compliance evidence kept restricted. | **T-303** (backend), **T-305** (screen); H5/H6/H8 append their cleanup steps; H11 (privacy requests, backups) |
 | Administrator with second factor | ✅ | Built and verified in H1 (T-102, D-015); admin web in H2 (T-206). This row was stale. | — |
 | Name change limit | 🔧 | Designed: 3 per rolling 30 days over the existing history (V-10). | **T-302** |
