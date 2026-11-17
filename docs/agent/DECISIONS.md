@@ -441,6 +441,36 @@ Building D-033/D-037/D-038 in the browser settled five things the design had lef
   is the backend's closed list, and a market decision counted as a backend rejection would read as
   a failure in the join metrics. Compliance already counts its own decisions.
 
+**D-043 · What the person's own corner taught the frontend (T-305).**
+Building D-034/D-035/D-036/D-037 in the browser settled five things the design had left open.
+- **The display-name allowance is the client's to state.** The backend answers only the refusal
+  (`429 change_limit_reached` with `next_change_at`), never how many changes are left, so the
+  screen states V-10's allowance from the protocol constants — three changes every thirty days —
+  and the refusal names the date of the next possible one. A read of the remaining changes would
+  let the screen count down instead; it is in `GAPS.md` and costs nothing to add later.
+- **The mode travels with the credential, so nothing has to ask for it.** Every answer that opens
+  or renews a session already carries `user.mode` (D-040), so the client keeps it on the stored
+  credential and the auth snapshot: the shell's switch, the profile and the teacher screen are
+  right on a cold load without a request of their own. Switching answers a fresh access token and
+  no refresh token, which the app adopts in place (`accessReissued`); the session is untouched.
+  The teacher screen asks for the mode itself, so arriving there by any route — the switch, the
+  home band, a bookmark — means the same thing.
+- **A screen that ends the identity cannot be gated by the operation catalog.** Every page is
+  rebuilt for whoever is signed in the moment that changes (D-028's identity key), so the gate
+  would read a successful deletion as someone who was never allowed there and send them to the
+  sign-in screen instead of home. `/profile/delete` therefore offers the way in rather than
+  redirecting, and the deletion takes the person home *before* the credential is forgotten:
+  `submit(leave)` waits for that navigation and only then signs out.
+- **An acceptance is recorded before the preference it governs is stored.** Turning marketing on
+  records the acceptance of the exact version read and stores the preference only once that is
+  written down, so a choice that was not recorded never looks taken; turning it off records the
+  withdrawal the same way. A text that is not published yet (P-23) is not accepted at all: the
+  switch says so and records nothing, which is D-042's rule for the acceptance gate.
+- **The design system gained a switch.** A preference that takes effect at once is neither a
+  checkbox nor a button: `Switch` is a real `role="switch"` with its state announced and drawn by
+  the knob's position as well as its colour, and it is in the `/design` gallery like every other
+  core component.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
