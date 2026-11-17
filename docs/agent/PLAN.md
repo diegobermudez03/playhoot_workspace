@@ -105,6 +105,26 @@ V-09…V-12; the design is the `planned` site data (455 entities, validator at 0
 join gate that asked for a declaration against C-01, a join outcome that hid `market_restricted`,
 and dialogs that opened on their close button (D-044).
 
-### H4 onwards
+### H4 — Games, versions, publication and Discovery
 
-Each milestone starts with `T-N00` (design, tier A) which writes its tasks here. T-400 (H4 design) is written: `tasks/T-400.md`.
+| Task | What | Tier | Size | State |
+|---|---|---|---|---|
+| T-400 | H4 design: the four conditions, publication and review, templates, taxonomy, Discovery, quotas; writes T-401… | A | L | done 2026-11-16 |
+| T-401 | Versions split and lifecycle: play/versions package, finalize apart from publishing, choose/return/unavailable, version resolution at create-session, builds on txqueue | B | L | pending |
+| T-402 | Publication, review, withdrawal and block: snapshot combinations, moderation's review core, offering, unpublish/republish/delete, admin block, creator notifications | B | L | pending |
+| T-403 | Discovery catalog: taxonomy with seed, search and filters, usage-fed popularity, public card read, recently played, public endpoints, place-requirements read | B | L | pending |
+| T-404 | Templates and quotas: grant with recorded acceptance, provenance and credits, featured selection, holding and creation limits wired, composed my-games | B | M | pending |
+| T-405 | Frontend public Discovery: discovery, category and card pages server-rendered, home's real catalog section, dynamic sitemap | B | L | pending |
+| T-406 | Frontend my games and workspace: redesign, Versions section, reshaped publish section, quota outcomes, declaration names the age | B | L | pending |
+| T-407 | Admin panels: review queue, taxonomy, featured templates, game block | C | M | pending |
+| T-408 | H4 close: walkthrough, SEO/a11y/PWA re-verification, `verified`, GAPS rewrite; close the milestone | B | M | pending |
+
+Order: T-401 → T-402 → T-403 → T-404 → T-405/T-406 (either order; both need T-404) → T-407 →
+T-408. Design decisions in D-045…D-051 and V-13/V-14; the design is the `planned` site data
+(532 entities, validator at 0). T-401 and T-402 edit migrations in place: the creator recreates the
+local database when they land (P-16). 9 sessions total against the 10–12 estimate.
+
+### H5 onwards
+
+Each milestone starts with `T-N00` (design, tier A) which writes its tasks here. T-500 (H5 design)
+is written by T-408 at the H4 close.

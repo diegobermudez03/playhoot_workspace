@@ -493,6 +493,106 @@ Verifying the milestone against the specification found three things the tasks h
   `/teacher`, `/declaration`), and two H1 walkthrough steps wait for their condition instead of a
   fixed two seconds, which a slow local database had turned into intermittent failures.
 
+**D-045 · The four version conditions, and who answers "which version do I play" (T-400).**
+P15§2's four conditions get four distinct homes. *In editing* and *ready* are `play_game_versions.status`
+(DRAFT / EXECUTABLE), owned by `play.versions`, which the T-401 split finally makes a real package;
+*pinned in a session* stays `play_sessions.game_version_id`. The other two live in **game**, both as
+references to versions it never opens (P15§2 allows exactly that): *chosen for new sessions* is
+`games.chosen_version_uuid` (empty = unavailable, history in `game_version_choices`) and *approved
+for Discovery* is the approved `game_publications` row, with `games.offered_publication_id` naming
+the one Discovery currently shows. `play_games.current_version_id` is dropped: keeping the choice in
+play would force a cross-domain read on every offering recompute, and the choice is a policy about
+the logical game, not about content. Consequences:
+- **Who plays what is game's answer.** `game.resolve-playable-version` replaces check-playability:
+  the owner plays the chosen version; everyone else plays the *offered publication's* version,
+  exactly as reviewed — never an unreviewed update (P04§4). create-session passes the resolved
+  version to `play.session`, which only verifies EXECUTABLE and pins it.
+- **The offering follows the choice when it can**: a chosen version with a retained approval is
+  offered; a chosen version under review keeps the previously approved combination in Discovery
+  (P04§4); switching back to an approved older version re-offers it without a new review (P04§5).
+- **Finalize ≠ publish.** Finishing a version (explicit act + ready checks + freeze with assets,
+  P04§1-2) is the `finalize-version` flow and by default also chooses the version; going public is
+  a separate publication request. The old `publish-game` flow and `POST /v1/games/{g}/publish` are
+  retired; `games.visibility` is dropped (public = has an offered publication).
+
+**D-046 · Publication pipeline and the moderation review core (T-400).**
+A publication is a frozen **combination snapshot** in `game_publications`: version uuid, card text,
+image object keys, category, tags, academic claim, the mandatory private-content declaration (must
+be "no" to submit, B), and the version facts (languages, players, devices, grade support) copied
+from `play.versions` at submission — so Discovery search and the card read game's own tables only.
+Moderation is born with its review core: `moderation_review_tasks` (one PENDING per game; a new
+request supersedes the old one), `decide-review` (approve / deny with the creator-visible note,
+never automatic even saturated), and `moderation_measures` for the administrative block. Shapes:
+- **Card edits never touch the approved snapshot** (P04§2,§4): PATCH edits the working card;
+  reaching Discovery again is a new request. The planned `edit-public-card` flow is retired.
+- **Unpublish keeps the approval**: it is an offering flag with history (`game_offering_changes`),
+  so re-offering the same approved, unchanged combination needs no new review — the same principle
+  that lets P04§5 return to an approved version. Deny, withdrawal, block and deletion all leave the
+  decision trail intact.
+- **Unpublish ≠ delete ≠ block** (P04§6): deletion is `games.deleted_at` (the column D-036 already
+  writes), leaves sessions and replays alone and keeps copies independent; the block is a recorded
+  moderation measure game executes (`game_blocks`) that refuses everyone including the owner, is
+  worded as a service restriction, and cancels pending reviews. Appeals and the other graduated
+  measures are H9's; review decisions on a game that meanwhile died land CANCELLED (moot guard).
+- The creator is notified through the existing types: `discovery-review` (outcome, optional email)
+  and `discovery-restriction` (block, necessary) — D-018 already carved them out.
+
+**D-047 · Templates: grant, provenance, featured (T-400).**
+Enabling a template is an append-only **grant row** on the game recording the exact version of the
+standard-permission text accepted and the creator's confirmation that every included asset may be
+reused (P05§1,§5); the text itself is a compliance acceptance text (kind `template-permission`),
+publishable from the existing admin texts panel — the creator writes the real one (P-23). Enabling
+requires an offered publication and the publish-games market gate (templates and publishing are one
+adult function, P02§1). Copies start from the offered approved version (P05§3) and are ordinary
+creations: the separate `copy-template` flow is folded into `create-game`, which now also writes
+`game_provenances` rows (source game, version, name snapshot, permission version) — the credits
+chain on the public card; applying a template to an existing draft appends provenance the same way.
+Disabling stops new copies and nothing else (P05§4). `games.template_allowed/template_featured` are
+dropped: the grant rows and the admin-managed `game_featured_templates` selection replace them.
+
+**D-048 · Catalog, search and popularity (T-400).**
+Categories (one per game) and allowed tags are admin-managed vocabularies in game
+(`game_categories`, `game_tags`, names in the three languages, retire-not-delete, every change in
+`game_taxonomy_changes` with actor and reason — D-011 pattern). Discovery search runs entirely over
+approved snapshots inside game: category and language columns, `game_publication_tags`, a trigram
+index on the snapshot name, partial indexes scoped to offered games. **Popularity is game's own
+aggregate fed by play through the queue**: commit-start writes a `game-usage` task (a new
+orchestrator-registered delivery type beside notify/analytics/spend/account-cleanup) into
+`game_usage_days`; an hourly periodic task recomputes `games.popularity_score` over the V-13
+window. Card statistics (sessions started in 30 days) show only at or above the V-13 threshold —
+real figures or none (P14§2). "Recently played" comes from `play.session.list-recent-games`,
+joined by composer.
+
+**D-049 · Quota wiring: games and creations (T-400).**
+`create-game` gains `plan.get-user-limits` as a step; game applies the stricter of received and its
+own counts — live games held (drafts included) for the saved-games capacity, `game_create_requests`
+rows in the rolling window for creations (that table is already the creation record P15§4 wants) —
+refusing `game_limit_reached` / `creation_limit_reached`. A template copy consumes a creation like
+any other (P12§14). `GET /v1/games` becomes the composed `my-games` read (game list + capacities)
+so the screen can say "X of Y games" without a second request. Session, player and room quotas stay
+H5's; no upsell on refusal until H6 exists (B: do not push a subscription).
+
+**D-050 · The split as code (T-400, built by T-401).**
+The versions code leaves `play/session` for `play/versions` (drafting, building, assets, previews,
+freeze, the new facts/list reads); `play_games` and `play_game_versions` are re-homed in the site
+data accordingly. The **build queue moves onto txqueue**: applying a change enqueues a `run-build`
+task on the play queue keyed by the version (the handler builds that version's newest QUEUED
+revision; supersession keeps working through build rows), which retires the last ad-hoc queue the
+backend had besides H5's replay buffer. Migrations are edited in place (METHOD §6): dropped columns
+(`games.visibility`, `template_allowed`, `template_featured`, `play_games.current_version_id`,
+`game_releases.visibility`) and the new tables ship in the original files, so **the creator
+recreates the local database after T-401/T-402** (P-16 already pending).
+
+**D-051 · The public surface Discovery needs (T-400).**
+Discovery, category pages and public cards are server-rendered public routes reading anonymous
+endpoints (`/v1/discovery*`, D-019); the card page lives at `/{language}/g/{gameUUID}`. The
+build-time sitemap gains a **dynamic section**: a sitemap index points at a host-served sitemap fed
+by `GET /v1/discovery/sitemap`, so approved cards and categories are crawlable without rebuilding
+(D-025 stays: the host logs nothing). `compliance.read-place-requirements` becomes the public,
+rules-only read of what a place asks for one function — it closes the D-042 gap, so the declaration
+screen names the exact age and learns which places need a state or province from the backend
+instead of a guessed list.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:
@@ -511,3 +611,5 @@ Operational values the specification does not fix (anti-abuse windows, page size
 | V-10 | Display-name changes: 3 per rolling 30 days, guests and accounts alike; the existing change history is the counter | B: identity |
 | V-11 | Guest expiry: daily sweep on the identity queue, batches of 500; activity = session use, written at most once per day per session | P02§9 |
 | V-12 | Account cleanup: standard queue retries (V-02); a dead cleanup task is an admin alert; targets stay 30 days in active systems, 90 in backups | P02§11 |
+| V-13 | Discovery defaults: popularity = sessions started in the last 7 days, recomputed hourly; card statistics = sessions started in the last 30 days, shown from 10; pages of 24, category samples 8, popular section 12, recently played 12; search text 2–80 chars, up to 10 tags per filter; review queue pages of 50; dynamic sitemap pages of 5,000 | P14§2, B: search |
+| V-14 | Starter taxonomy, seeded in the migration and editable in admin: 10 categories (trivia-quizzes, word-games, board-cards, party, action-arcade, puzzle-logic, memory, math, language-learning, science-nature) and ~24 descriptive tags chosen by T-403; names in es/en/pt | B: admin manages categories and tags |

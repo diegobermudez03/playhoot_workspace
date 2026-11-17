@@ -15,14 +15,14 @@ None of the following existed at the snapshot: plans and payments, credits, budg
 |---|---|---|
 | Isolation between domains | ✅ | Only orchestrator/composer/api combine domains. `api` calls operations of a single domain directly: kept. |
 | Data trail (change history) | ✅ | Existing standard; apply it to everything new. |
-| Transactional queue + DLQ | 🔧 | Built and verified in H1 (`utils/txqueue`, per-domain tables, backoff, dead tasks, admin retry/cancel). Still outside it: the builds table used as a queue and the in-memory replay queue; they move when their milestones touch them (H4/H5). |
+| Transactional queue + DLQ | 🔧 | Built and verified in H1 (`utils/txqueue`, per-domain tables, backoff, dead tasks, admin retry/cancel). Still outside it: the builds table used as a queue (moves in T-401, D-050) and the in-memory replay queue (H5). |
 | Orchestration with persistence | 🔧 | Orchestrator has no state; repairs on demand. Valid for what exists; payments and grades will need recoverable pending steps (P15§6). |
-| Limits per plan passed by the caller | 🔧 | `plan.get-user-limits` exists (H1) but no flow reads it yet; the only applied limit is still 1 active session per creator. Owning milestones wire it (H4 games/creations, H5 sessions/players, H8 rooms, H7 storage). |
+| Limits per plan passed by the caller | 🔧 | `plan.get-user-limits` exists (H1) but no flow reads it yet; the only applied limit is still 1 active session per creator. T-404 wires games/creations; H5 sessions/players, H8 rooms, H7 storage. |
 | Cost control and admission | 🔧 | Budget core verified in H1 (caps, admission, ladder, automatic shutdown, step-up gradual reopening). Only email asks admission and reports spend; AI, images, simulations, builds, storage, traffic and compute do not yet (each milestone that adds cost-bearing work wires it; H6 completes). See "H1 close" below. |
 | Metrics and alerts | 🔧 | They only write to the log (planned for delivery 2). Logical-outcome metrics per operation exist as a pattern. |
 | Analytics in DB | 🔧 | Ingestion verified in H1; only `game-created` and `session-started` are emitted. Other events arrive with their milestones; the panel is H10. |
 | Multiple instances | 🔧 | `ownership` is a marker; single instance. Acceptable for phase 1. |
-| Deletion of users and games | 🔧 | Designed by T-300 (D-036): account and guest deletion with cross-domain cleanup is T-303; `games.deleted_at` gets its first writer there. Single-game withdrawal stays H4. |
+| Deletion of users and games | 🔧 | Account and guest deletion verified in H3 (D-036). Single-game unpublish/delete/block is T-402 (D-046). |
 
 ## Identity and access
 
@@ -36,7 +36,7 @@ of the frontend). Every row is done or assigned to a later milestone.
 | Guest upgrade without merging with existing accounts | ✅ | P03§10; demonstrated by code in the H3 walkthrough (identity and name kept). | — |
 | Email code | ✅ | P03§8, V-09. Demonstrated: registering, signing in again into the same account, a wrong code leaving the attempt live, a spent code, the fourth send in 15 minutes acknowledged but not sent. Its two screen states audited at WCAG 2.2 AA, the wrong-code announcement checked by keyboard. | — |
 | Guest expiry at 90 days | ✅ | P02§9, V-11. Demonstrated on a backdated guest: expired through the same deletion with origin `expiry`; an upgraded guest is never swept. | — |
-| Declared age, country, market matrix | 🔧 | Create-game asks for the declaration and goes ahead once declared; a declaration below the age binds (P21§6) and cannot be changed by answering again; joining asks nothing and refuses only where restricted (C-01, corrected in D-044); the declaration screen and the admin matrix panel are verified. Missing: the gates of the flows later milestones build, and a public read of what a place asks for (D-042). | H4/H6/H8 (their own gates, and the public read) |
+| Declared age, country, market matrix | 🔧 | Create-game asks for the declaration and goes ahead once declared; a declaration below the age binds (P21§6) and cannot be changed by answering again; joining asks nothing and refuses only where restricted (C-01, corrected in D-044); the declaration screen and the admin matrix panel are verified. Missing: the publish-games gate (T-402), the public read of what a place asks for (T-403, D-051) and the screen naming the age from it (T-406); subscribe and teach gates stay H6/H8. | T-402/T-403/T-406, H6/H8 |
 | Normal/teacher/student modes | 🔧 | P03§9. Normal and teacher done: the mode rides the token and survives renewals (demonstrated), the switch and the honest teacher presentation exist (T-305, audited). Missing: student identity and what teaching unlocks. | H8 (student, classes), H6 (plans) |
 | Recorded acceptances (P22§3) | ✅ | Terms and own-data at the gate, marketing at its switch, the class agreement readable and downloadable; texts published from admin (T-306). The real texts are still the creator's (`CREATOR_TODO.md` P-23). | — |
 | Per-class student identity with credential | ➕ | P03§2-7. Identity's contract for it is written down (D-034). | H8 |
@@ -53,19 +53,26 @@ of the frontend). Every row is done or assigned to a later milestone.
 
 ## Games, versions and publication
 
-| Topic | State | What is missing or changes |
-|---|---|---|
-| Game, card, logo and photos, editions | ✅ | |
-| Draft version → immutable executable | ✅ | The four conditions of P15§2 (in editing, chosen, approved, pinned) still need to be distinguished. |
-| Versions inside `play/session` | 🔧 | Split into `play/versions` (P15§2). |
-| Publication | 🔧 | Today automatic. Missing: request, admin review of version + card + assets, and keeping the previous approved one while under review. |
-| Version history, return to a previous one, unpublish, delete | ➕ | |
-| Private content declaration | ➕ | |
-| Templates | 🔧 | The copy mechanism exists; nobody can mark a game as a template; missing explicit permission, provenance, administrable recommended ones. |
-| Categories and tags | ➕ | Only types without tables. |
-| Public Discovery, search, public card | ➕ | `discovery` is an empty stub. |
-| Academic mark, languages, devices on card | 🔧 | Languages and devices are computed in the build; exposing them and the academic mark is missing. |
-| Game and creation quotas | ➕ | |
+Designed by T-400 (16 Nov 2026, D-045…D-051): every row is owned by an H4 task or explicitly
+assigned to a later milestone. The design is the `planned` site data.
+
+| Topic | State | What is missing or changes | Owner |
+|---|---|---|---|
+| Game, card, logo and photos, editions | ✅ | Card gains category, tags and the academic claim; visibility leaves the card (publication is its own act). | T-402/T-403 |
+| Draft version → immutable executable | 🔧 | The four conditions of P15§2 get distinct homes (D-045); finishing a version becomes explicit and separate from publishing (P04§1). | T-401 |
+| Versions inside `play/session` | 🔧 | Split into `play/versions`; builds move onto txqueue (D-050). | T-401 |
+| Publication | 🔧 | Request + review of the exact version + card + assets combination; the previously approved one stays offered during review (P04§4); moderation's review core is born. | T-402 |
+| Version history, return to a previous one, unpublish, delete | 🔧 | List and return designed (P04§5); unpublish ≠ delete ≠ block as three acts (P04§6). | T-401 (versions), T-402 (ways out) |
+| Private content declaration | ➕ | Mandatory at the publication request; "yes" cannot go public (B). | T-402 |
+| Templates | 🔧 | Grant with recorded acceptance and asset confirmation, provenance and credits, featured selection, disable without destroying (P05). | T-404 |
+| Categories and tags | ➕ | Admin-managed vocabularies with the V-14 seed. | T-403 |
+| Public Discovery, search, public card | ➕ | Search over approved snapshots, usage-fed popularity, public card; server-rendered pages and dynamic sitemap. | T-403 (backend), T-405 (pages) |
+| Academic mark, languages, devices on card | 🔧 | Copied into the publication snapshot as version facts; academic confirmed at review. Grade support stays false until the H5 results contract. | T-402 (snapshot), H5 (grade support) |
+| Game and creation quotas | ➕ | `plan.get-user-limits` wired into create-game and copies; my-games composed read (D-049). | T-404 |
+| Screenshots only from simulations (B: description images) | ➕ | Photos stay owner-uploaded and reviewed as part of the combination; simulation captures replace the source. | H7 (creation captures) |
+| Reporting a game from its card | ➕ | The card's report entry and the report flows. | H9 |
+| Teacher Discovery (academic games only) | ➕ | | H8 |
+| Full admin games panel (history, relationships) | ➕ | H4 ships find + block only. | H10 |
 
 ## Sessions and replays
 
@@ -116,8 +123,8 @@ of the frontend). Every row is done or assigned to a later milestone.
 | Classroom: classes, students, materials, activities, grades, export | P02, P03, P07, P08 |
 | Minors' authorizations, agreements, acceptances, privacy requests | P20–P22 |
 | Reports, support, incoming email | P13, P33 |
-| Moderation and graduated measures | P13 |
-| Admin: everything except the web base, the queues, budget and email panels that H2 built | B, P16 |
+| Moderation and graduated measures (the publication review core and the game block are H4: T-402; the rest is H9) | P13 |
+| Admin: everything except the web base and the H2/H3 panels; H4 adds reviews, taxonomy, featured templates and game block (T-407) | B, P16 |
 | Analytics panel (ingestion exists since H1) | P34 |
 | Scheduled retention and deletion | P02§9-11 |
 
@@ -146,14 +153,14 @@ and verified it as behaviour: `scripts/verify/seo.mjs`, `scripts/verify/a11y.mjs
 
 | Topic | What is missing | Milestone |
 |---|---|---|
-| Presentation of the existing screens | Join, lobby, play, host, my games and the creation workspace work (walked end to end against a live backend in T-207) but still wear the old layouts under the new tokens. Each is redesigned with its own milestone. | H4 (games, workspace), H5 (sessions, play) |
+| Presentation of the existing screens | Join, lobby, play, host, my games and the creation workspace work (walked end to end against a live backend in T-207) but still wear the old layouts under the new tokens. My games and the workspace are T-406; sessions and play are H5. | T-406 (games, workspace), H5 (sessions, play) |
 | Per-screen titles and metadata for app routes | They fall back to "Playhoot". | the milestone that redoes each screen |
-| Home, Discovery and the public card | The home page says plainly that the catalog arrives with Discovery (D-029). Search, categories, the public game card and the sitemap entries that D-019 wants to target are not built. | H4 |
+| Home, Discovery and the public card | The home page says plainly that the catalog arrives with Discovery (D-029). Search, categories, the public game card and the sitemap entries that D-019 wants to target are designed (D-048/D-051) and built by T-403/T-405. | T-403/T-405 |
 | Profile, account, history and replay | T-304 added the residence-and-age declaration (`/declaration`); the profile area itself, the sign-in methods screen and deletion are still nothing. | H3 (T-305: profile, account), H5 (history, replay) |
 | Teacher and student modes | The mode switch explains that they are coming and leaves the person where they are; nothing behind them exists. | H8 |
 | Notifications beyond the bell | Where a notification leads, the notifications page and preferences. | each milestone for its own types; H3 (T-305) for preferences |
 | How many display-name changes are left | The profile states V-10's allowance (three every thirty days) and names the date of the next possible change when the backend refuses one: nothing answers how many are left, so the screen cannot count down (D-043). A field on `GET /v1/me`, or on the display-name answer, would close it. | H10 or whichever task next touches the profile; nothing depends on it |
-| The age a place asks for, before it is declared | Nothing public tells a client the threshold of a place: the market matrix is admin-only, and `POST /v1/compliance/declaration` answers `threshold_age` only once a declaration is recorded. The declaration screen therefore words its checkbox without a number and names the age only afterwards (D-042), and it guesses from a closed list which countries need a state or province, correcting itself from the backend's refusal. A public read of one place's rules for one function would close both. | H4, which wires the publish and subscribe gates and meets the same need |
+| The age a place asks for, before it is declared | Nothing public tells a client the threshold of a place: the market matrix is admin-only, and `POST /v1/compliance/declaration` answers `threshold_age` only once a declaration is recorded. The declaration screen therefore words its checkbox without a number and names the age only afterwards (D-042), and it guesses from a closed list which countries need a state or province, correcting itself from the backend's refusal. `compliance.read-place-requirements` (T-403, D-051) closes both; T-406 makes the screen use it. | T-403 (read), T-406 (screen) |
 | Plans, purchases, credits | No screen. | H6 |
 | AI chat, asset library, captures | No screen. | H7 |
 | Support and reports | No screen. | H9 |
@@ -187,7 +194,7 @@ The walkthrough `playhoot/walkthrough_h1_test.go` demonstrates H1 on the local d
 
 | Topic | What remains | Reconciled in |
 |---|---|---|
-| Existing flows ignore the new gates | T-302 wired `check-market-access` into create-game and the session-join admission. create-session, previews, simulations and builds still do not call `get-user-limits` or `admit-work`, and report no spend. | H4 (games, creations), H5 (sessions, players), H6 (budget everywhere) |
+| Existing flows ignore the new gates | T-302 wired `check-market-access` into create-game and the session-join admission; T-404 wires `get-user-limits` into create-game (holding, creations). create-session, previews, simulations and builds still do not call `get-user-limits` or `admit-work`, and report no spend. | T-404 (games, creations), H5 (sessions, players), H6 (budget everywhere) |
 | Reach of the shutdown (P32§6) | Enforced at admission: every cost-bearing call is refused and its task retries until dead without reaching a provider. Queue workers keep running cheap, non-cost tasks (entries, analytics); live sessions are not interrupted by a shutdown. | H5/H6 (interrupting sessions and jobs), deployment controls (delivery 2) |
 | Ladder alert during a shutdown | The admin's `budget-level-changed` entry is created, but its email is refused like any other spend while shut down (the shutdown does not wait for an alert, P32§5). | H10 (admin panel shows the ladder); accepted |
 | P32§10 demonstrations not done locally | Growth with revenue and liquidity, lost or late metrics, late billing, deployment cutoff and residual charges, reaction times. Month change not lifting a shutdown is shown by the budget DB tests, not the walkthrough. | H6 (revenue, metrics), H13 and launch (`CREATOR_TODO.md`) |
