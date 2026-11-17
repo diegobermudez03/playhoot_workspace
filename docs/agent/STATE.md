@@ -1,21 +1,17 @@
 # State
 
-_Updated: 2026-11-16, closing of T-305 (the profile area, the notifications pages and the
-teacher presentation)._
+_Updated: 2026-11-16, closing of T-306 (the market matrix and acceptance-texts admin panels)._
 
 ## Next task
 
-**T-306** · model **Sonnet** · effort **medium** · Admin panels: the market matrix and the
-acceptance texts. Size **S**. Backend endpoints exist since T-302
-(`GET/PUT /admin/v1/markets`, `GET/PUT /admin/v1/texts`); this task builds the two panels in
-front of them. Read `tasks/T-306.md` first; the admin area is the one exception to the two
-presentations (D-023, desktop-first) and follows the T-206 checklist in
-`packages/features/admin` + `apps/web/src/features/admin/`.
+**T-307** · model **Opus** · effort **medium** · H3 close: walkthrough, a11y/SEO/PWA
+re-verification, mark the milestone's screens `verified`, rewrite `GAPS.md`, close the milestone.
+Read `tasks/T-307.md` first.
 
 ## Current milestone
 
 **H3 — Identity and access**, designed by T-300 (16-nov-2026). Board in `PLAN.md`: T-301, T-302,
-T-303, T-304, T-305 (done) → T-306 (admin panels, C-tier) → T-307 (close).
+T-303, T-304, T-305, T-306 (done) → T-307 (close).
 Decisions D-033…D-043, defaults V-09…V-12. Site data: 456 entities, validator at 0.
 
 ## Open questions for the creator

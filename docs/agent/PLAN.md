@@ -92,7 +92,7 @@ Order as run: T-201 → T-202 → T-203 → T-204 → T-205 → T-206 → T-207.
 | T-303 | Deletion and guest expiry: delete-account cleanup across domains, 90-day sweep, activity tracking | B | M | done 2026-11-16 |
 | T-304 | Frontend: email code and acceptances on the sign-in screen, the contextual declaration screen | B | M | done 2026-11-16 |
 | T-305 | Frontend: profile area, notifications page and preferences, teacher presentation, shell mode switch | B | L | done 2026-11-16 |
-| T-306 | Admin panels: market matrix and acceptance texts | C | S | pending |
+| T-306 | Admin panels: market matrix and acceptance texts | C | S | done 2026-11-16 |
 | T-307 | H3 close: walkthrough, a11y/SEO/PWA re-verification, `verified`, GAPS rewrite; close the milestone | B | M | pending |
 
 Order: T-301 → T-302 → T-303 → T-304 → T-305 → T-306 → T-307. T-304 needs T-301 and T-302;
