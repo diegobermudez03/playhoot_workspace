@@ -93,12 +93,18 @@ Order as run: T-201 → T-202 → T-203 → T-204 → T-205 → T-206 → T-207.
 | T-304 | Frontend: email code and acceptances on the sign-in screen, the contextual declaration screen | B | M | done 2026-11-16 |
 | T-305 | Frontend: profile area, notifications page and preferences, teacher presentation, shell mode switch | B | L | done 2026-11-16 |
 | T-306 | Admin panels: market matrix and acceptance texts | C | S | done 2026-11-16 |
-| T-307 | H3 close: walkthrough, a11y/SEO/PWA re-verification, `verified`, GAPS rewrite; close the milestone | B | M | pending |
+| T-307 | H3 close: walkthrough, a11y/SEO/PWA re-verification, `verified`, GAPS rewrite; close the milestone | B | M | done 2026-11-16 |
 
 Order: T-301 → T-302 → T-303 → T-304 → T-305 → T-306 → T-307. T-304 needs T-301 and T-302;
 T-306 needs T-302; T-303 can run any time after T-301. Design decisions in D-033…D-038 and
 V-09…V-12; the design is the `planned` site data (455 entities, validator at 0).
 
+**H3 closed 16-nov-2026** in 8 sessions, against the 7–9 estimate. T-307 verified it as behaviour:
+`playhoot/walkthrough_h3_test.go` (16 steps, each named by its rule) runs with the repo tests, and
+`verify:a11y` now audits 26 screens with a scripted keyboard pass. The close found and fixed a
+join gate that asked for a declaration against C-01, a join outcome that hid `market_restricted`,
+and dialogs that opened on their close button (D-044).
+
 ### H4 onwards
 
-Each milestone starts with `T-N00` (design, tier A) which writes its tasks here.
+Each milestone starts with `T-N00` (design, tier A) which writes its tasks here. T-400 (H4 design) is written: `tasks/T-400.md`.

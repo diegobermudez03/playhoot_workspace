@@ -471,6 +471,28 @@ Building D-034/D-035/D-036/D-037 in the browser settled five things the design h
   the knob's position as well as its colour, and it is in the `/design` gallery like every other
   core component.
 
+**D-044 · What closing H3 corrected (T-307).**
+Verifying the milestone against the specification found three things the tasks had left wrong.
+- **Joining asks nothing, as C-01 says.** T-302 put the full market gate in front of the
+  session-join admission, so a person with no declaration was answered `declaration_required`
+  wherever the place had an age (all of the open markets), and locally always, because the local
+  locator knows no country. D-038 had meant "approximate country only" for that entry and C-01
+  forbids asking a guest anything but a name. The admission now uses `marketgate.Gate.Admit`: a
+  declaration that would be owed is not asked for and the person counts as meeting the age, so only
+  a restriction refuses — a market not offered where they are (declared residence, else approximate
+  country) or known minority (P21§6). The wire reason `declaration_required` is gone from joining;
+  the frontend dropped the "tell us where you live" outcome that answered it. Gated *adult* flows
+  (create-game today) still ask, unchanged.
+- **The join screen never showed `market_restricted`.** Its reason switch had no case for it, so
+  a real restriction read as an unexpected error. It has its own calm outcome now.
+- **A dialog opened on its close button, never where its screen asked.** `Dialog` opens with
+  `showModal()`, which focuses the first focusable element, and React never writes `autofocus` to
+  the page, so the deletion dialog's "opens on Cancel" did not happen. `Dialog` focuses an element
+  marked `data-autofocus` after opening; the deletion dialog marks Cancel, and the gallery shows it.
+- Also: `robots.txt` now disallows the person's own pages H3 added (`/profile`, `/notifications`,
+  `/teacher`, `/declaration`), and two H1 walkthrough steps wait for their condition instead of a
+  fixed two seconds, which a slow local database had turned into intermittent failures.
+
 ## V — Defaults
 
 Operational values the specification does not fix (anti-abuse windows, page sizes, retries) are chosen at implementation time, stay configurable, and are listed here and in the documentation of the operation. Already derived from the specification:

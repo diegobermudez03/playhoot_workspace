@@ -1,18 +1,19 @@
 # State
 
-_Updated: 2026-11-16, closing of T-306 (the market matrix and acceptance-texts admin panels)._
+_Updated: 2026-11-16, closing of T-307 (H3 closed)._
 
 ## Next task
 
-**T-307** · model **Opus** · effort **medium** · H3 close: walkthrough, a11y/SEO/PWA
-re-verification, mark the milestone's screens `verified`, rewrite `GAPS.md`, close the milestone.
-Read `tasks/T-307.md` first.
+**T-400** · model **Fable** · effort **high** · H4 design: games, versions, publication and
+Discovery. Design only, as `planned` site data, plus the T-401… briefs and the H4 board.
+Read `tasks/T-400.md` first.
 
 ## Current milestone
 
-**H3 — Identity and access**, designed by T-300 (16-nov-2026). Board in `PLAN.md`: T-301, T-302,
-T-303, T-304, T-305, T-306 (done) → T-307 (close).
-Decisions D-033…D-043, defaults V-09…V-12. Site data: 456 entities, validator at 0.
+**H3 — Identity and access: closed 16-nov-2026** in 8 sessions (T-300…T-307), against 7–9.
+Verified as behaviour by `playhoot/walkthrough_h3_test.go` and the three frontend verify scripts
+(26 screens audited). Decisions D-033…D-044, defaults V-09…V-12. Site data: 456 entities,
+validator at 0. Next: **H4**, designed by T-400.
 
 ## Open questions for the creator
 
@@ -20,12 +21,11 @@ None to decide. What the creator still has to *do* is in `CREATOR_TODO.md`:
 
 - **P-13** — try the PWA on a real Android phone and a real iPhone (steps in `tasks/T-202.md`).
 - **P-14 / P-15** — real app icons and the final mascot; drop-in replacements, nothing blocks.
-- **P-16** — recreate the local `playhoot` database once. **T-305 changed no migration**, so
-  `playhoot_t303` still matches the code and can be reused; the older `playhoot_t205` and
+- **P-16** — recreate the local `playhoot` database once. **T-307 changed no migration**;
+  `playhoot_t307` (created by T-307) and `playhoot_t303` match the code; `playhoot_t205` and
   `playhoot_t301` are stale. The command is under "Running a live backend".
-- **P-23** — the real acceptance texts. Still the seeded draft placeholders, which a new account
-  now accepts at the gate and the profile's legal screen lists with their version and download.
-  T-306 builds the panel that publishes the real ones.
+- **P-23** — the real acceptance texts, published from `/admin/texts`. Until then every screen
+  shows the seeded drafts.
 
 ## Notes for the next session
 
@@ -54,8 +54,10 @@ None to decide. What the creator still has to *do* is in `CREATOR_TODO.md`:
   the six digits, by trying 000000–999999 (a second in Node). The backend's limits are real
   locally — 30 code requests an hour and 10 tries a minute per client address — and restarting the
   backend clears them, because the limiter is in memory.
-- **The market gates are live and closed in development**: the local locator answers an unknown
-  country, which `Decide` reads as "needs a declaration". The seeded matrix enables Colombia and
+- **The market gates**: create-game (an adult function) asks for a declaration locally, because
+  the local locator answers an unknown country. **Joining asks nothing** (C-01, D-044): the
+  admission uses `marketgate.Gate.Admit` and refuses only a restricted market or known minority. A
+  future adult-function gate uses `Require`; a future entry gate uses `Admit`. The seeded matrix enables Colombia and
   Mexico (and the US/Canada per state), so declaring one of those is what makes create-game and
   joining go ahead locally.
 - **Identity surfaces that exist.** `identity/usecases/readprofile`, `setmode`, `setlanguage`,
@@ -71,10 +73,13 @@ None to decide. What the creator still has to *do* is in `CREATOR_TODO.md`:
 - **Frontend `npm run check` must run from PowerShell** (under Git Bash every vitest file fails to
   load; it is the shell, not the code). There is no DOM test environment: rendering is checked in
   the browser; the re-runnable verify scripts are in `playhoot_frontend/scripts/verify/`
-  (`verify:seo`, `verify:a11y`, `verify:pwa` — see that repo's `AGENTS.md`); the a11y script takes
-  the screen list inside it, and T-307 extends it with the H3 screens — `/profile`,
-  `/profile/methods`, `/profile/legal`, `/profile/delete`, `/teacher`, `/notifications`,
-  `/notifications/preferences`.
+  (`verify:seo`, `verify:a11y`, `verify:pwa` — see that repo's `AGENTS.md`). `verify:a11y` signs a
+  fresh account in its own browser and audits the H3 screens plus a keyboard pass; add
+  `--totp-secret` and `--account` for the admin panels. `verify:seo` needs the build made with
+  `PLAYHOOT_SITE_URL` set to the `--origin` it is given (the sitemap and robots are written at
+  build time). A new screen goes into the a11y lists in the task that builds it.
+- **A `Dialog` opens on its close button** unless an element inside carries `data-autofocus`:
+  React's `autoFocus` never reaches the page, so the browser cannot see it (D-044).
 - **Frontend conventions that bind H3's screens** (details in `playhoot_frontend/AGENTS.md` and
   the D-028/D-030/D-032/D-042/D-043 notes): screens never wrap themselves in `AppShell`; new app
   routes are client-rendered under `ClientLayout` and carry no language in the path; compose
